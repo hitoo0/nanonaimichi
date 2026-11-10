@@ -1,0 +1,1263 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500&family=Shippori+Mincho:wght@500;600;700&display=swap" rel="stylesheet">
+<title>名のない道 — 梟玄</title>
+<style>
+:root{
+  --ink:#ece7dc; --ink-dim:#b9b2a4; --paper:#f4efe4; --paper-ink:#23211c;
+  --line:rgba(236,231,220,.16); --accent:#c8a86a; --accent2:#7fa3a1;
+  --bg1:#1c222b; --bg2:#0e1218; --glow:#3a4a5c; --river1:#2e3d4a; --river2:#141d26;
+  --panel:rgba(14,17,22,.78); --fs:19px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP",serif;background:var(--bg2);color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+a{color:var(--accent)}
+/* ---------- background stage ---------- */
+#stage{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.bgLayer{position:absolute;inset:0;opacity:0;transition:opacity 2.4s ease;background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 62%,var(--bg2) 100%)}
+.bgLayer.on{opacity:1}
+.bgLayer::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 90% 55% at 50% 28%,var(--glow) 0%,transparent 62%);opacity:.55}
+.river{position:absolute;left:0;right:0;bottom:0;height:21%;opacity:0;transition:opacity 2.4s ease;background:linear-gradient(180deg,transparent 0%,var(--river1) 30%,var(--river2) 100%)}
+.river::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(180deg,transparent 0 14px,rgba(255,255,255,.045) 14px 15px)}
+.river::after{content:"";position:absolute;top:34%;left:12%;right:12%;height:2px;background:radial-gradient(ellipse 40% 100% at 30% 50%,rgba(232,201,138,.5),transparent 70%),radial-gradient(ellipse 30% 100% at 72% 50%,rgba(232,201,138,.35),transparent 70%)}
+.river.on{opacity:1}
+.lighthouse{position:absolute;top:16%;left:50%;width:340px;height:340px;margin-left:-170px;border-radius:50%;background:radial-gradient(circle,rgba(240,220,170,.28) 0%,transparent 62%);opacity:0}
+.lighthouse.on{animation:beam 9s ease-in-out infinite}
+@keyframes beam{0%,72%{opacity:0}80%{opacity:1}92%,100%{opacity:0}}
+.stagelight{position:absolute;top:-8%;left:50%;width:70vw;max-width:760px;height:75%;transform:translateX(-50%);background:linear-gradient(180deg,rgba(244,222,170,.20),transparent 78%);clip-path:polygon(38% 0,62% 0,100% 100%,0 100%);opacity:0;transition:opacity 2.4s ease}
+.stagelight.on{opacity:1}
+.grain{position:absolute;inset:0;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E")}
+body[data-mode="light"] .bgLayer{transition:opacity .6s ease}
+body[data-mode="text"] #stage{display:none}
+body[data-mode="text"]{background:#efe9db;color:#26231d}
+body[data-mode="text"]{--ink:#26231d;--ink-dim:#5c564a;--line:rgba(38,35,29,.18);--panel:rgba(255,252,244,.92);--accent:#7a5f2e}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+body.reduced *{animation:none!important;transition:none!important}
+/* ---------- chrome ---------- */
+#progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0;z-index:60}
+header.top{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;gap:6px;padding:10px 14px;background:linear-gradient(180deg,rgba(10,12,16,.72),rgba(10,12,16,0));transition:opacity .4s}
+body[data-mode="text"] header.top{background:linear-gradient(180deg,rgba(239,233,219,.92),rgba(239,233,219,0))}
+header.top .brand{font-size:15px;letter-spacing:.28em;margin-right:auto;white-space:nowrap}
+header.top .brand small{display:block;letter-spacing:.14em;font-size:10px;color:var(--ink-dim)}
+.navbtn{background:transparent;border:1px solid transparent;color:var(--ink);font-size:13px;letter-spacing:.08em;padding:7px 10px;border-radius:999px;opacity:.85}
+.navbtn:hover{border-color:var(--line);opacity:1}
+.navbtn[aria-current="true"]{color:var(--accent);opacity:1}
+.iconbtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+.iconbtn.on{color:#0e1218;background:var(--accent);border-color:var(--accent)}
+.ui-hidden header.top,.ui-hidden #dock{opacity:0;pointer-events:none}
+main{position:relative;z-index:2}
+.view{display:none}
+.view.on{display:block}
+/* ---------- hero ---------- */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:110px 22px 64px;max-width:1060px;margin:0 auto}
+.hero .en{letter-spacing:.5em;font-size:12px;color:var(--accent);text-transform:uppercase}
+.hero h1{font-size:clamp(52px,10vw,104px);font-weight:500;letter-spacing:.12em;line-height:1.15;margin:14px 0 6px;text-shadow:0 2px 30px rgba(0,0,0,.45)}
+.hero .author{font-size:17px;letter-spacing:.3em;color:var(--ink-dim)}
+.hero .lead{max-width:560px;font-size:16.5px;line-height:2.05;margin:30px 0 8px;color:var(--ink)}
+.hero .meta{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 26px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:5px 13px;font-size:12.5px;letter-spacing:.06em;color:var(--ink-dim);background:rgba(0,0,0,.18)}
+.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{border:1px solid var(--accent);background:var(--accent);color:#141310;font-size:15px;letter-spacing:.12em;padding:14px 30px;border-radius:2px}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:hover{filter:brightness(1.08)}
+.hero .note{font-size:12.5px;color:var(--ink-dim);margin-top:20px;max-width:520px;line-height:1.9}
+.hero .scrolldown{margin-top:44px;font-size:11px;letter-spacing:.4em;color:var(--ink-dim)}
+section.page{max-width:1060px;margin:0 auto;padding:120px 22px 90px}
+section.page h2{font-size:30px;font-weight:500;letter-spacing:.14em;margin:0 0 8px}
+section.page .sub{color:var(--ink-dim);font-size:14px;margin-bottom:34px;line-height:1.9}
+/* chapter list */
+.chlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.chcard{border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:20px 16px;text-align:left;color:var(--ink)}
+.chcard:hover{border-color:var(--accent)}
+.chcard .num{font-size:26px;letter-spacing:.1em}
+.chcard .place{font-size:12px;color:var(--ink-dim);margin-top:6px;line-height:1.6}
+.chcard .st{font-size:11px;color:var(--accent);margin-top:8px;letter-spacing:.08em}
+.chcard.read .num{color:var(--accent)}
+/* people / places */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:24px}
+.card h3{margin:0 0 4px;font-size:19px;font-weight:500;letter-spacing:.06em}
+.card .role{font-size:12px;color:var(--accent);letter-spacing:.1em;margin-bottom:12px}
+.card p{font-size:14.5px;line-height:1.95;color:var(--ink);margin:0 0 10px}
+.card p:last-child{margin-bottom:0}
+.silhouette{height:86px;border-radius:3px;margin-bottom:16px;background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02));position:relative;overflow:hidden}
+.silhouette::after{content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:44px;height:62px;background:rgba(0,0,0,.5);border-radius:24px 24px 0 0;filter:blur(1px)}
+/* design table */
+table.design{width:100%;border-collapse:collapse;font-size:13.5px}
+table.design th,table.design td{border-bottom:1px solid var(--line);padding:12px 10px;text-align:left;vertical-align:top;line-height:1.75}
+table.design th{color:var(--accent);font-weight:500;letter-spacing:.06em;white-space:nowrap}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 10px;font-size:11.5px;white-space:nowrap}
+.notebox{border:1px dashed var(--line);border-radius:4px;padding:20px 22px;background:rgba(0,0,0,.14);font-size:14.5px;line-height:2}
+.notebox .ph{color:var(--accent)}
+/* ---------- reader ---------- */
+#reader{max-width:760px;margin:0 auto;padding:118px 22px 40px}
+.chaphead{text-align:center;margin:26px 0 54px}
+.chaphead .cnum{font-size:13px;letter-spacing:.5em;color:var(--accent)}
+.chaphead h2{font-size:clamp(30px,6vw,44px);font-weight:500;letter-spacing:.22em;margin:12px 0 10px}
+.chaphead .cplace{font-size:13px;color:var(--ink-dim);letter-spacing:.1em}
+.chaphead .rule{width:44px;height:1px;background:var(--accent);margin:22px auto 0;opacity:.7}
+.prose{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:clamp(26px,5vw,54px) clamp(20px,5vw,58px);backdrop-filter:blur(3px)}
+body[data-mode="text"] .prose{background:#fffdf6;box-shadow:0 1px 24px rgba(60,50,30,.10)}
+.prose p{font-size:var(--fs);line-height:2.05;margin:0 0 1.55em;letter-spacing:.015em}
+.prose p:last-child{margin-bottom:0}
+.prose p:first-of-type::first-letter{font-size:1.55em}
+.chnav{display:flex;justify-content:space-between;gap:12px;margin:34px 0 10px;flex-wrap:wrap}
+.chnav button{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:12px 20px;border-radius:2px;font-size:14px;letter-spacing:.08em}
+.chnav button:disabled{opacity:.35;cursor:default}
+.chnav button:hover:not(:disabled){border-color:var(--accent)}
+.motifbar{display:flex;gap:10px;align-items:center;justify-content:center;margin:26px 0 4px;flex-wrap:wrap}
+.motifbar button{border:1px solid var(--line);background:transparent;color:var(--ink-dim);border-radius:999px;padding:8px 18px;font-size:13px;letter-spacing:.06em}
+.motifbar button:hover{color:var(--ink);border-color:var(--accent)}
+.motifbar span{font-size:12px;color:var(--ink-dim)}
+#ending{display:none;text-align:center;padding:90px 20px 130px}
+#ending.on{display:block}
+#ending .big{font-size:22px;letter-spacing:.2em;line-height:2.2}
+#ending .small{color:var(--ink-dim);font-size:13px;margin-top:18px;line-height:2}
+/* dock */
+#dock{position:fixed;right:14px;bottom:14px;z-index:55;display:none;gap:8px;align-items:center;transition:opacity .4s}
+body[data-view="reader"] #dock{display:flex}
+#menuBtn{display:none}
+@media (max-width:760px){
+  #menuBtn{display:inline-flex}
+  header.top{flex-wrap:nowrap}
+  header.top nav{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(12,14,18,.97);border-bottom:1px solid var(--line);padding:10px 14px 14px;flex-wrap:wrap;gap:4px}
+  body[data-mode="text"] header.top nav{background:rgba(244,239,226,.98)}
+  header.top nav.open{display:flex}
+  header.top nav .navbtn{border:1px solid var(--line);border-radius:999px;padding:9px 14px;font-size:13px}
+  header.top .brand{font-size:14px;letter-spacing:.18em}
+}
+#dock .lbl{font-size:11px;color:var(--ink-dim);letter-spacing:.06em;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+/* settings drawer */
+#drawer{position:fixed;top:0;right:0;bottom:0;width:min(360px,92vw);background:#12151b;color:#ece7dc;z-index:80;transform:translateX(105%);pointer-events:none;transition:transform .35s ease;padding:26px 24px;overflow:auto;border-left:1px solid rgba(255,255,255,.12)}
+#drawer.on{pointer-events:auto}
+body[data-mode="text"] #drawer{background:#1c1a15}
+#drawer.on{transform:none}
+#drawer h3{margin:0 0 4px;font-size:17px;letter-spacing:.12em;font-weight:500}
+#drawer .x{position:absolute;top:16px;right:16px}
+.grp{margin-top:26px}
+.grp .t{font-size:12px;letter-spacing:.2em;color:#b9b2a4;margin-bottom:10px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:1px solid rgba(255,255,255,.22);background:transparent;color:#ece7dc;border-radius:999px;padding:8px 14px;font-size:13px}
+.seg button.on{background:#c8a86a;border-color:#c8a86a;color:#141310}
+#drawer input[type=range]{width:100%;accent-color:#c8a86a}
+#drawer p{font-size:13px;line-height:1.9;color:#b9b2a4}
+#scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:70;opacity:0;pointer-events:none;transition:opacity .3s}
+#scrim.on{opacity:1;pointer-events:auto}
+#toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%) translateY(16px);background:#12151b;color:#ece7dc;border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:9px 20px;font-size:13px;z-index:90;opacity:0;pointer-events:none;transition:.35s}
+#toast.on{opacity:1;transform:translateX(-50%)}
+footer{position:relative;z-index:2;text-align:center;padding:30px 20px 90px;color:var(--ink-dim);font-size:12px;letter-spacing:.1em;line-height:2}
+#loading{position:fixed;inset:0;z-index:100;background:#0e1218;color:#ece7dc;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;letter-spacing:.3em;font-size:14px}
+#loading .bar{width:120px;height:1px;background:rgba(255,255,255,.2);overflow:hidden}
+#loading .bar i{display:block;height:100%;width:40%;background:#c8a86a;animation:ld 1.2s ease-in-out infinite}
+@keyframes ld{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
+@media (max-width:640px){
+  header.top .brand small{display:none}
+  .navbtn{padding:7px 6px;font-size:12px}
+  #reader{padding-top:96px}
+  .hero{padding-bottom:48px}
+  table.design th,table.design td{display:block;border-bottom:none;padding:4px 2px}
+  table.design tr{display:block;border-bottom:1px solid var(--line);padding:12px 0}
+}
+/* ================= rework: typography & imagery ================= */
+:root{
+  --font-body:"Noto Serif JP","Hiragino Mincho ProN","Hiragino Mincho Pro","Yu Mincho","YuMincho",serif;
+  --font-display:"Shippori Mincho","Hiragino Mincho ProN","Hiragino Mincho Pro","Yu Mincho","YuMincho",serif;
+  --font-ui:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
+}
+body{font-family:var(--font-body)}
+button,.navbtn,.chip,.lbl,.seg button,.chnav button,.motifbar button,.chcard .st,.chcard .place{font-family:var(--font-ui)}
+header.top .brand{font-family:var(--font-display);font-weight:600}
+section.page h2,.card h3{font-family:var(--font-display);font-weight:600}
+/* hero with photograph */
+.hero{position:relative;justify-content:flex-end;overflow:hidden}
+.heroimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 42%;z-index:-1;filter:saturate(.85) contrast(1.04)}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(8,10,13,.34) 0%,rgba(8,10,13,0) 34%,rgba(8,10,13,.18) 58%,rgba(8,10,13,.82) 100%)}
+.heropanel{background:rgba(10,12,15,.94);padding:36px 38px 30px;max-width:720px}
+.heropanel .scrolldown{margin-top:26px}
+@media (max-width:640px){.heropanel{padding:26px 22px 22px}}
+body[data-mode="text"] .heropanel{background:rgba(246,244,238,.97)}
+.hero h1{font-family:var(--font-display);font-weight:700;font-size:clamp(44px,7vw,72px);letter-spacing:.12em}
+.hero .author{font-family:var(--font-display);font-weight:500;font-size:18px}
+.hero .en{font-family:var(--font-ui);text-transform:none;letter-spacing:.34em}
+body[data-mode="text"] .heroimg,body[data-mode="text"] .hero::before{display:none}
+.intro{max-width:1060px;margin:0 auto;padding:84px 22px 10px}
+.intro p{max-width:660px;font-size:17px;line-height:2.1;margin:0}
+.homelinks{max-width:1060px;margin:0 auto;padding:44px 22px 30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.homelink{display:block;border:1px solid var(--line);background:rgba(10,12,15,.55);color:var(--ink);text-decoration:none;text-align:left;padding:0;overflow:hidden;width:100%}
+.homelink img{width:100%;height:150px;object-fit:cover;display:block;filter:saturate(.85) contrast(1.04)}
+.homelink .hl-t{display:block;padding:14px 16px 4px;font-family:var(--font-display);font-weight:600;font-size:17px;letter-spacing:.1em}
+.homelink .hl-s{display:block;padding:0 16px 16px;font-size:12.5px;color:var(--ink-dim);font-family:var(--font-ui);line-height:1.7}
+.homelink:hover{border-color:var(--accent)}
+body[data-mode="text"] .homelink{background:rgba(255,252,244,.9)}
+body[data-mode="text"] .homelink img{display:none}
+/* chapter opener */
+.chaphead{text-align:left;margin:56px 0 56px}
+.chaphead .cnum{font-family:var(--font-ui);font-size:11px;letter-spacing:.28em}
+.chaphead h2{font-family:var(--font-display);font-weight:600;font-size:64px;letter-spacing:.14em;margin:16px 0 0;line-height:1.2}
+.chaphead .csub{font-family:var(--font-display);font-weight:500;font-size:22px;letter-spacing:.18em;margin-top:12px}
+.chaphead .cplace{margin-top:26px}
+.chaphead .rule{margin:28px 0 0}
+@media (max-width:767px){.chaphead{margin:40px 0}.chaphead h2{font-size:48px}.chaphead .csub{font-size:19px}}
+/* prose rhythm */
+.prose{--padx:clamp(20px,5vw,58px);background:rgba(13,16,20,.94)}
+.prose p{font-size:var(--fs);line-height:2.0;letter-spacing:.02em;margin:0}
+@media (max-width:767px){.prose p{font-size:calc(var(--fs) - 1px);letter-spacing:.01em}}
+.prose p.m55{margin-top:.55em}.prose p.m100{margin-top:1em}.prose p.m135{margin-top:1.35em}.prose p.m0{margin-top:0}
+.prose p:first-of-type::first-letter{font-size:1em}
+.prose p.keyp{font-size:calc(var(--fs)*1.11);font-weight:500;line-height:1.9;letter-spacing:.03em;margin-top:3.2em;margin-bottom:3.2em}
+@media (max-width:767px){.prose p.keyp{font-size:calc((var(--fs) - 1px)*1.11)}}
+.prose p.widep{margin-top:3.2em;margin-bottom:3.2em}
+.prose p.silencep{margin-top:34vh;margin-bottom:34vh}
+/* figures */
+figure.fig{margin:64px 0 0;position:relative}
+figure.fig .imgwrap{position:relative;overflow:hidden}
+figure.fig img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.85) contrast(1.05)}
+figure.fig .imgwrap::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E")}
+figure.fig figcaption{font-family:var(--font-ui);font-size:11px;line-height:1.7;color:var(--ink-dim);padding:10px 2px 0;letter-spacing:.02em}
+figure.fig .cap-end{height:64px}
+figure.fig.band{margin-left:calc(-1*var(--padx));margin-right:calc(-1*var(--padx))}
+figure.fig.band .imgwrap{aspect-ratio:47/20}
+figure.fig.wide{--fw:min(1120px,calc(100vw - 16px));width:var(--fw);margin-left:calc(50% - var(--fw)/2)}
+figure.fig.wide .imgwrap{aspect-ratio:47/20}
+figure.fig.break .imgwrap{aspect-ratio:16/9}
+figure.fig.small{max-width:70%;margin-left:auto;margin-right:auto}
+figure.fig.small .imgwrap{aspect-ratio:16/9}
+figure.fig.small.left{margin-left:0}
+figure.fig.vert{max-width:420px;margin-left:auto;margin-right:auto}
+figure.fig.vert .imgwrap{aspect-ratio:3/4}
+figure.fig.crop .imgwrap{aspect-ratio:16/9}
+figure.fig.crop img{transform:scale(1.9);transform-origin:32% 58%}
+figure.fig.fullpage{--fw:min(1440px,100vw);width:var(--fw);margin-left:calc(50% - var(--fw)/2);margin-top:80px}
+figure.fig.fullpage .imgwrap{height:min(88svh,900px)}
+figure.fig img.g-spring{filter:saturate(.88) contrast(1.04) brightness(1.07)}
+figure.fig img.g-eve{filter:saturate(.82) contrast(1.06) brightness(.84) sepia(.16)}
+figure.fig img.g-winter{filter:saturate(.68) contrast(1.06) brightness(.82)}
+figure.fig.hallfig .hallpanel{position:absolute;left:0;right:0;bottom:0;background:rgba(10,9,7,.94);padding:26px clamp(20px,4vw,44px)}
+figure.fig.hallfig .hallpanel p{color:#ece7dc;font-size:var(--fs);line-height:2.0;margin:0}
+body[data-mode="text"] figure.fig{display:none}
+body[data-mode="text"] .prose p.hallp{display:block!important}
+/* chapter door (fullscreen opener) */
+.door{position:relative;width:100vw;margin-left:calc(50% - 50vw);height:100svh;min-height:520px;overflow:hidden;margin-top:-118px}
+.door img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.85) contrast(1.05)}
+.door .doorpanel{position:absolute;left:50%;transform:translateX(-50%);bottom:7%;width:min(660px,calc(100vw - 40px));background:rgba(11,13,16,.94);padding:30px 34px 26px}
+.door .dnum{font-family:var(--font-ui);font-size:11px;letter-spacing:.28em;color:var(--accent)}
+.door h2{font-family:var(--font-display);font-weight:600;font-size:56px;letter-spacing:.14em;margin:12px 0 0;line-height:1.2;color:#ece7dc}
+.door .dsub{font-family:var(--font-display);font-weight:500;font-size:20px;letter-spacing:.18em;margin-top:10px;color:#ece7dc}
+.door .dplace{font-size:12.5px;color:#b9b2a4;margin-top:16px;letter-spacing:.06em;font-family:var(--font-ui);line-height:1.8}
+@media (max-width:767px){.door{margin-top:-96px}.door h2{font-size:44px}.door .doorpanel{padding:24px 22px 20px}}
+body[data-mode="text"] .door{display:none}
+body[data-mode="text"] .chaphead.doorhidden{display:block!important}
+.headband{position:relative;width:min(1240px,calc(100vw - 16px));margin-left:calc(50% - min(620px,50vw - 8px));margin-top:-30px;margin-bottom:8px}
+.headband .imgwrap{aspect-ratio:47/20;overflow:hidden;position:relative}
+.headband img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.85) contrast(1.05)}
+.headband .imgwrap::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E")}
+.headband figcaption{font-family:var(--font-ui);font-size:11px;color:var(--ink-dim);padding:10px 2px 0;line-height:1.7}
+body[data-mode="text"] .headband{display:none}
+/* people / places imagery */
+.personimg{width:100%;height:190px;object-fit:cover;display:block;margin-bottom:16px;filter:saturate(.85) contrast(1.05)}
+.placeimg{width:100%;height:210px;object-fit:cover;display:block;margin-bottom:8px;filter:saturate(.85) contrast(1.05)}
+.placeimg.sm{height:130px}
+.imgrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.creditline{font-family:var(--font-ui);font-size:11px;color:var(--ink-dim);line-height:1.7;margin:0 0 14px}
+.creditlist{font-family:var(--font-ui);font-size:12.5px;line-height:2}
+.creditlist li{margin-bottom:6px}
+.creditlist a{color:var(--accent)}
+.ferrydivider{margin:26px 0 4px}
+.ferrydivider img{width:100%;height:300px;object-fit:cover;display:block;filter:saturate(.85) contrast(1.05)}
+body[data-mode="text"] .personimg,body[data-mode="text"] .placeimg,body[data-mode="text"] .ferrydivider{display:none}
+.chcard .thumb{width:100%;height:86px;object-fit:cover;display:block;margin:-20px -16px 14px;width:calc(100% + 32px);filter:saturate(.85) contrast(1.05)}
+body[data-mode="text"] .chcard .thumb{display:none}
+#ending{padding-top:16vh}
+.prose p.hallp{display:none}
+figure.fig img.g-dark{filter:saturate(.78) contrast(1.06) brightness(.7)}
+figure.fig.ferrycrop img{transform:scale(1.32);transform-origin:32% 55%}
+.ferrydivider{overflow:hidden}
+.ferrydivider img{transform:scale(1.32);transform-origin:32% 55%}
+.headband img.g-eve{filter:saturate(.82) contrast(1.06) brightness(.84) sepia(.16)}
+figure.fig.small.left{max-width:55%}
+@media (max-width:640px){figure.fig.small,figure.fig.small.left{max-width:88%}}
+</style>
+</head>
+<body data-mode="cinematic">
+<div id="loading"><div>名のない道</div><div class="bar"><i></i></div><div style="font-size:11px;letter-spacing:.2em">原稿を読み込んでいます</div></div>
+
+<div id="stage" aria-hidden="true">
+  <div class="bgLayer on" id="bgA"></div>
+  <div class="bgLayer" id="bgB"></div>
+  <div class="lighthouse" id="beam"></div>
+  <div class="stagelight" id="slight"></div>
+  <div class="river" id="river"></div>
+  <div class="grain"></div>
+</div>
+<div id="progress"></div>
+
+<header class="top">
+  <div class="brand">名のない道<small>シネマティック Web 小説 — 梟玄</small></div>
+  <button class="iconbtn" id="menuBtn" title="メニュー" aria-label="メニューを開く">☰</button>
+  <nav aria-label="主要" id="mainNav">
+    <button class="navbtn" data-go="home">表紙</button>
+    <button class="navbtn" data-go="reader">読む</button>
+    <button class="navbtn" data-go="chapters">章一覧</button>
+    <button class="navbtn" data-go="people">人物</button>
+    <button class="navbtn" data-go="places">舞台</button>
+    <button class="navbtn" data-go="design">演出設計</button>
+    <button class="navbtn" data-go="notes">制作ノート</button>
+  </nav>
+  <button class="iconbtn" id="soundBtn" title="音響 オン／オフ（初期はオフ）" aria-label="音響の切り替え">♪</button>
+  <button class="iconbtn" id="uiBtn" title="操作表示の切り替え" aria-label="操作表示の切り替え">◐</button>
+  <button class="iconbtn" id="setBtn" title="読書設定" aria-label="読書設定を開く">⚙</button>
+</header>
+
+<main>
+  <!-- HOME -->
+  <div class="view on" id="view-home">
+    <div class="hero">
+      <img class="heroimg" src="assets/img-c554f18d737c.jpg" alt="リムリック、シャノン川越しのトモンド橋とキング・ジョン城" fetchpriority="high">
+      <div class="heropanel">
+      <div class="en">シネマティック Web 小説</div>
+      <h1>名のない道</h1>
+      <div class="author">梟玄</div>
+      <div class="meta">
+        <span class="chip">文学・ヒューマンドラマ</span><span class="chip">アイルランド／イングランド</span><span class="chip">全13章・295段落</span><span class="chip">音楽と人生</span>
+      </div>
+      <div class="cta">
+        <button class="btn" id="startBtn">物語を読む</button>
+        <button class="btn ghost" id="resumeBtn" style="display:none">続きから読む</button>
+      </div>
+      <p class="note">音響について：音は自動では鳴りません。この作品の音はすべてブラウザ内で生成されるオリジナルの環境音と短い旋律で、右上の ♪ ボタンを押したときだけ始まります。音がなくても、物語は完全にお読みいただけます。</p>
+      <div class="scrolldown">スクロール ― 章ごとに、光と音が静かに変わります</div>
+      </div>
+    </div>
+    <div class="homelinks">
+      <button class="homelink" data-go="chapters"><img src="assets/img-84849f65fd2a.jpg" alt="夕景のシャノン川" loading="lazy"><span class="hl-t">章一覧</span><span class="hl-s">全十三章。舞台と章番号だけを示します。</span></button>
+      <button class="homelink" data-go="people"><img src="assets/img-e49eb44a52dd.jpg" alt="ギターケースを背負い、川沿いを歩く人物の後ろ姿（AI生成画像）" loading="lazy"><span class="hl-t">登場人物</span><span class="hl-s">キーラン、クリス、ダラ、ステイシー。顔は描かず、後ろ姿と手元で示します。</span></button>
+      <button class="homelink" data-go="places"><img src="assets/img-bcb39b4d854d.jpg" alt="ロンドン、カムデン・ロックの運河" loading="lazy"><span class="hl-t">舞台</span><span class="hl-s">リムリックとシャノン川、フェリー、ロンドン、ダブリン、講堂。実在地の写真でたどります。</span></button>
+    </div>
+  </div>
+
+  <!-- READER -->
+  <div class="view" id="view-reader">
+    <article id="reader">
+      <div class="chaphead">
+        <div class="cnum" id="chNum">第一章</div>
+        <h2 id="chTitle">一</h2>
+        <div class="csub" id="chSub" style="display:none"></div>
+        <div class="cplace" id="chPlace"></div>
+        <div class="rule"></div>
+      </div>
+      <div class="prose" id="prose"></div>
+      <div class="motifbar" id="motifBar" style="display:none">
+        <button id="motifBtn">♪ 旋律モチーフを聴く</button>
+        <span id="motifNote"></span>
+      </div>
+      <nav class="chnav" aria-label="章移動">
+        <button id="prevBtn">← 前の章</button>
+        <button id="tocBtn">章一覧</button>
+        <button id="nextBtn">次の章 →</button>
+      </nav>
+      <div id="ending">
+        <div class="big">― 了 ―</div>
+        <p class="small">読み終えていただき、ありがとうございました。<br>川の音は、ここで静かに流れ続けています。</p>
+        <p class="small"><button class="navbtn" data-go="chapters">章一覧へ</button>　<button class="navbtn" data-go="home">表紙へ戻る</button></p>
+      </div>
+    </article>
+  </div>
+
+  <!-- CHAPTERS -->
+  <div class="view" id="view-chapters">
+    <section class="page">
+      <h2>章一覧</h2>
+      <p class="sub">全十三章。あらすじは伏せ、章番号と舞台だけを示します。読んだ章には印が付きます。任意の章から読み始められます。</p>
+      <div class="chlist" id="chList"></div>
+    </section>
+  </div>
+
+  <!-- PEOPLE -->
+  <div class="view" id="view-people">
+    <section class="page">
+      <h2>登場人物</h2>
+      <p class="sub">容姿は文章の中に委ねられています。ここでは原稿に書かれた事実の範囲で、物語の結末に触れずに紹介します。</p>
+      <div class="cards">
+        <div class="card"><img class="personimg" src="assets/img-e49eb44a52dd.jpg" alt="ギターケースを背負い、冬の川沿いを歩く人物の後ろ姿（AI生成画像）" loading="lazy"><p class="creditline">生成画像（AI）</p><h3>キーラン</h3><div class="role">ギター講師 ／ リムリック</div>
+          <p>川沿いの路地、緑のドアの建物の二階でギター教室を開き、三階に住む。生徒は三十人ほど。</p>
+          <p>他人の演奏の「どこが」良いか、悪いかを正確に言える耳を持つ。父はパブのセッションでフィドルを弾き、母は聖歌隊の伴奏をする家庭に育った。コードを押さえるとき、左手首がわずかに内側へ傾く癖がある。</p></div>
+        <div class="card"><h3>クリス</h3><div class="role">ミュージシャン ／ 旧友</div>
+          <p>キーランと同い年の旧友。二〇〇五年の地区コンテストで出会った。図書館で借りた教本からコードを一つずつ覚えた。</p>
+          <p>演奏のあとに必ず「どこが」と訊き、答えを紙と小さい鉛筆に書き留める習慣がある。指がズボンの縫い目を叩く癖がある。</p></div>
+        <div class="card"><img class="personimg" src="assets/img-8df45fbf6ff0.jpg" alt="アコースティックギターを弾く手元のクローズアップ（AI生成画像）" loading="lazy"><p class="creditline">生成画像（AI）。ダラは手元のみで表します</p><h3>ダラ・カヴァナ</h3><div class="role">生徒 ／ 15歳</div>
+          <p>四月にキーランの教室へ来た十五歳の生徒。右手の指が、いつも五拍子でテーブルを叩いている。</p>
+          <p>一度聴いたフレーズを、そのまま再現できる耳を持つ。数学の小テストの点数を、隠さず机に置く。</p></div>
+        <div class="card"><h3>ステイシー</h3><div class="role">幼なじみ ／ 催しの企画</div>
+          <p>キーランより二つ年上の幼なじみ。地域の催しを企画する会社で働く。ギターは今も弾くが、仕事にはしていない。</p>
+          <p>事実だけを言い、慰めない。発表会のホールを押さえ、人の動きを静かに仕掛ける。</p></div>
+      </div>
+      <figure class="ferrydivider">
+        <img src="assets/img-2547477b481f.jpg" alt="夜のフェリー甲板、手すりに立つ二人の後ろ姿のシルエット（AI生成画像）" loading="lazy">
+        <figcaption class="creditline" style="margin-top:8px">生成画像（AI） ― 夜のフェリーの甲板。二人の人物はどちらのものでもなく、場面の像として置きます。</figcaption>
+      </figure>
+    </section>
+  </div>
+
+  <!-- PLACES -->
+  <div class="view" id="view-places">
+    <section class="page">
+      <h2>舞台</h2>
+      <p class="sub">物語に登場する地名・川・航路は実在しますが、物語および登場人物はフィクションです。教室の建物、ホール、カフェ等の具体的な施設は作中のものであり、写真は実在地の風景・雰囲気を示すイメージで、作中の施設そのものではありません。実在の人物・団体・店舗と作中の描写との関係を示唆するものでもありません。写真はすべて Wikimedia Commons からライセンスを確認して取得し、各写真の下にクレジットを表示しています。クレジットの全点一覧と出典は「制作ノート」にあります。</p>
+      <div class="cards">
+        <div class="card"><img class="placeimg" src="assets/img-c554f18d737c.jpg" alt="リムリック、シャノン川越しのトモンド橋とキング・ジョン城" loading="lazy"><p class="creditline">PHOTO ― William Murphy from Dublin, Ireland, CC BY-SA 2.0, via Wikimedia Commons</p><h3>リムリックとシャノン川</h3><div class="role">アイルランド ／ 主な舞台</div><p>アイルランド中西部、シャノン川河口近くの街。キーランの教室と自室があり、物語は川の音とともに始まり、川のほとりで閉じます。第1章・第7章・第13章で、同じ川が異なる光で再登場します。</p>
+          <div class="imgrow"><img class="placeimg sm" src="assets/img-84849f65fd2a.jpg" alt="夕景のシャノン川" loading="lazy"><img class="placeimg sm" src="assets/img-616afb8f0c9a.jpg" alt="夜のシャノン川、対岸の灯の反射" loading="lazy"></div><p class="creditline">左：PHOTO ― mandoft from El Campello (Alicante), Spain, CC BY-SA 2.0, via Wikimedia Commons／右：PHOTO ― Claire WatersLulu, CC BY-SA 4.0, via Wikimedia Commons</p>
+          <img class="placeimg" src="assets/img-598a89a75d64.jpg" alt="リムリック、ペリー・スクエアのジョージアン様式の街並み" loading="lazy"><p class="creditline">PHOTO ― Stevesphotography, CC BY-SA 4.0, via Wikimedia Commons</p><p>少年時代に二人が弾いた橋の下の路上。そして、名札のプレートが落ちたままの路地。それでも郵便は毎朝届く――この路地は物語を貫くモチーフです。</p></div>
+        <div class="card"><img class="placeimg" src="assets/img-9c3ff800febc.jpg" alt="フェリーの後部デッキから遠ざかる港と海面" loading="lazy"><p class="creditline">PHOTO ― Ridiculopathy / CC0, via Wikimedia Commons</p><h3>ロスレアと夜のフェリー</h3><div class="role">アイルランド ― 海を渡る</div><p>十八歳の二人がロンドンへ向かう道すがら乗った夜のフェリー（第4章）。到着港の地名は原稿に明記されていないため、ここでも航路を断定しません。</p>
+          <img class="placeimg" src="assets/img-fc7534bb98f1.jpg" alt="港を出る大型カーフェリーの全景" loading="lazy"><p class="creditline">PHOTO ― Bob Castle / CC BY-SA 4.0, via Wikimedia Commons（アイリッシュ海のフェリーの写真であり、作中の航路そのものではありません）</p></div>
+        <div class="card"><img class="placeimg" src="assets/img-bcb39b4d854d.jpg" alt="ロンドン、カムデン・ロックのリージェンツ運河" loading="lazy"><p class="creditline">PHOTO ― Jarle Hammen Knudsen (dubidubno), CC BY 4.0, via Wikimedia Commons</p><h3>ロンドン — カムデンと運河</h3><div class="role">イングランド</div><p>路上演奏の日々。顔のない群衆の中で、キーランの音は「出したそばから消えた」。クリスの動画が広がり、二人の道が分かれ始めた街（第5章）。</p>
+          <img class="placeimg" src="assets/img-c2d5d5698620.jpg" alt="レンガ壁に立てかけられたギターケースと、横切る通行人の脚（AI生成画像）" loading="lazy"><p class="creditline">生成画像（AI） ― 路上に置かれたギターケース</p>
+          <img class="placeimg" src="assets/img-2c1af47a6290.jpg" alt="夜のリージェント・ストリート、濡れた路面と赤い二階建てバス" loading="lazy"><p class="creditline">PHOTO ― 0x010C, CC BY-SA 4.0, via Wikimedia Commons</p></div>
+        <div class="card"><img class="placeimg" src="assets/img-ec079d264e7d.jpg" alt="ダブリン、グラフトン・ストリートの昼の街並み" loading="lazy"><p class="creditline">PHOTO ― Donaldytong, CC BY-SA 3.0, via Wikimedia Commons</p><h3>ダブリン — 音楽院とカフェ</h3><div class="role">アイルランド</div><p>キーランが四年間学んだ音楽院のある街。音楽院裏手の古いカフェでの再会は第10章です。下のカフェの画像は生成画像であり、作中の店の実物ではありません。</p>
+          <img class="placeimg" src="assets/img-9d9f55699ea0.jpg" alt="雨滴の窓と二つのコーヒーカップのあるカフェのテーブル（AI生成画像）" loading="lazy"><p class="creditline">生成画像（AI） ― 雨のカフェの場面の像</p>
+          <img class="placeimg" src="assets/img-c69715daf9cf.jpg" alt="ダブリン、テンプル・バー地区の夜の街並み" loading="lazy"><p class="creditline">PHOTO ― Trevah, Public domain, via Wikimedia Commons</p></div>
+        <div class="card"><img class="placeimg" src="assets/img-e5bb5da5b7ca.jpg" alt="古い劇場の客席と舞台、安全幕のある内装" loading="lazy"><p class="creditline">PHOTO ― Stratfordeast, CC BY-SA 3.0, via Wikimedia Commons（実在の劇場の内装であり、作中のホールそのものではありません）</p><h3>講堂</h3><div class="role">ダブリン ／ 発表会の会場</div><p>三百席の古い講堂。木の壁と高い天井。写真は実在の劇場の内装で、雰囲気を示すものです。</p>
+          <img class="placeimg" src="assets/img-9628d68ca27d.jpg" alt="舞台袖から見た舞台、スポットライトの光束（AI生成画像）" loading="lazy"><p class="creditline">生成画像（AI） ― 舞台袖の場面の像</p></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- DESIGN -->
+  <div class="view" id="view-design">
+    <section class="page">
+      <h2>演出設計</h2>
+      <p class="sub">「小説の想像力を残したまま、映画の演出力を取り入れる」。視覚は、実在地の写真（Wikimedia Commons、ライセンス確認済み）と、顔を映さない映画的な生成画像を組み合わせ、全画像に統一した低彩度のグレードと控えめな粒子感を通して一本のフィルムのように見せます。本文を画像の上に直接置くことはせず、文章は常に不透明な地の上に置きます。音響は音声ファイルを使わず、Web Audio APIで生成するオリジナルの環境音と旋律モチーフです。シャノン川の場面（第1・7・13章）と教室の窓（第7・8・13章）では同じ構図系統を再利用し、光の条件だけを変えています。第9章は意図的に画像を置かない「沈黙の章」です。転換点の段落は全編で6件だけ、元の位置のまま広い余白で際立たせます（抜き出しての再掲はしません）。</p>
+      <div style="overflow-x:auto">
+      <table class="design">
+        <tr><th>章</th><th>舞台・出来事</th><th>背景と光</th><th>音響</th><th>強度</th><th>理由</th></tr>
+        <tr><td>一</td><td>9月末の夜。動画の中のクリスと、川沿いの自室</td><td>深い青灰色。下部に川の帯と対岸の灯の反射</td><td>川（弱）</td><td><span class="pill">低</span></td><td>物語の基調。川の構図をここで刻み、終章で回収する</td></tr>
+        <tr><td>二</td><td>2005年秋、コンテストと駐車場での出会い</td><td>低彩度の暖灰色。現在より僅かに明るく</td><td>なし</td><td><span class="pill">低</span></td><td>回想を感傷的にしない。「どこが」の習慣の始まりは言葉だけで十分</td></tr>
+        <tr><td>三</td><td>台所、父のラジオ、金曜のパブのセッション</td><td>室内の暖かい光（彩度は抑制）</td><td>なし（室内の静けさ）</td><td><span class="pill">低〜中</span></td><td>音楽の家の空気は、音を足さず文章に委ねる</td></tr>
+        <tr><td>四</td><td>夜のフェリー甲板。未完成の歌と、言えなかった一言</td><td>黒に近い海と空。灯台の光が一度だけ巡る</td><td>風と海 ／ 旋律モチーフ初出</td><td><span class="pill">高</span></td><td>物語全体の旋律がここで生まれる。転換点にふさわしい静かな山場</td></tr>
+        <tr><td>五</td><td>ロンドンの路上。動画の拡散とレーベルの連絡</td><td>平たい灰色の街と運河。コントラスト低め</td><td>街（弱）。ラジオの場面で動きを止める</td><td><span class="pill">中</span></td><td>「顔のない街」の平たさ自体が演出</td></tr>
+        <tr><td>六　クリス</td><td>クリス視点。ホテルの夜とインタビューの裏側</td><td>雨ににじむ街灯。第1章に似た夜だが川の帯はない</td><td>雨（弱）</td><td><span class="pill">中</span></td><td>「彼の夜には川がない」ことを構図の欠落で示す</td></tr>
+        <tr><td>七</td><td>音楽院の四年、教室を開くまで</td><td>川の構図を再利用し、昼の光で</td><td>川（弱、第1章と同じ音色）</td><td><span class="pill">低</span></td><td>同じ風景が、語り手の現在地の変化で違って見える</td></tr>
+        <tr><td>八</td><td>ダラの才能と、ケースを蹴る夜</td><td>教室の夕方、手元に寄る光。山場では動きを止める</td><td>なし</td><td><span class="pill">中</span></td><td>感情が震える場面に演出を足さないことが演出</td></tr>
+        <tr><td>九</td><td>発表会に来なかったダラとの対話</td><td>ほぼ静止した教室の光</td><td>なし（沈黙）</td><td><span class="pill">低＝沈黙</span></td><td>対話だけの章。沈黙を演出として扱う</td></tr>
+        <tr><td>十</td><td>ダブリンのカフェ、19年越しの対面と決裂</td><td>曇天の平らな光。カップが冷める時間に合わせ緩やかに落ちる</td><td>カフェ（極弱）。山場で停止</td><td><span class="pill">中</span></td><td>光の落下だけで時間の経過を示す</td></tr>
+        <tr><td>十一</td><td>雨の夜の電話。三曲のデモと批評の返信</td><td>雨の夜の青灰色</td><td>雨 ／ モチーフが異なる調とテンポで再登場。沈黙では全音を落とす</td><td><span class="pill">高</span></td><td>19年越しに「三小節目」が返される章。旋律の再登場が意味を持つ</td></tr>
+        <tr><td>十二</td><td>11月22日、古い講堂の発表会</td><td>袖の暗さと舞台の光の対比。舞台の光が差す</td><td>モチーフが二つの音色で。五分間の静けさは無音で</td><td><span class="pill">最高</span></td><td>作品のクライマックス。ただし拍手の音は原稿にないため入れない</td></tr>
+        <tr><td>十三</td><td>ツアーの誘い、ラジオの帰還、冬の路地</td><td>川の構図を三度目に。冬の夕方の静かに重い色</td><td>川（弱）／ モチーフを短く一度だけ</td><td><span class="pill">低〜中</span></td><td>結末に感情を押し付けない。最後は余白と川だけを残す</td></tr>
+      </table>
+      </div>
+      <p class="sub" style="margin-top:26px">繰り返しのモチーフ：シャノン川（第1・7・13章）、「どこが」という問いと紙と鉛筆、半拍の間、五拍子、名札の落ちた路地と毎朝届く郵便、父のラジオ、裏返しのスマホ。</p>
+    </section>
+  </div>
+
+  <!-- NOTES -->
+  <div class="view" id="view-notes">
+    <section class="page">
+      <h2>制作ノート</h2>
+      <p class="sub">このページの記述のうち、原稿から確認できる事実以外は、作者による記入を待つプレースホルダーとして残しています。</p>
+      <div class="notebox">
+        <p><strong>作品について（原稿より）</strong></p>
+        <p>梟玄『名のない道』全十三章。舞台はアイルランド（リムリック、ダブリン）とイングランド（ロンドン）。「届くこと」と「正確であること」の違い、名前の載らない場所で働くことと、それでも届くものを描いた物語です。本文は原稿から機械抽出した原文を一字一句そのまま収録しています（全13章・295段落）。</p>
+        <p><strong>作者の意図</strong></p>
+        <p class="ph">（作者による記入欄 ― 未記入）</p>
+        <p><strong>制作背景</strong></p>
+        <p class="ph">（作者による記入欄 ― 未記入）</p>
+        <p><strong>Web版の制作方針</strong></p>
+        <p>文章を主役とし、映像と音は文章の意味を深める範囲に限定しました。視覚素材は、実在地の写真（Wikimedia Commons から、ライセンスを1点ずつ確認して取得）と、顔を映さない映画的な生成画像（AI生成）です。人物は後ろ姿・手元・シルエットのみで表し、ダラ（15歳）は手元のみで表します。本文を画像の上に直接置くことはせず、可読性を最優先にしています。音響は既存楽曲を使わず、Web Audio APIによる生成音のみを用い、初期状態では無音です。</p>
+        <p><strong>素材と権利</strong></p>
+        <p>本文の著作権は作者・梟玄に帰属します。写真は各ライセンス（CC BY／CC BY-SA／CC0／Public domain）の条件に従い、下記のクレジット一覧で作者名・ライセンス名・出典を明示しています。生成画像は実在の人物の写真ではなく、AIが生成したオリジナル画像です。</p>
+      </div>
+      <div class="notebox" style="margin-top:18px">
+        <p><strong>画像クレジット一覧</strong></p>
+        <p>写真（Wikimedia Commons）― 全12点。写真は表示にあたり、トリミングおよび色調補正（彩度・コントラスト等の統一処理）を行っています。</p>
+        <ul class="creditlist">
+          <li>シャノン川・リムリック（トモンド橋とキング・ジョン城）： Photo: William Murphy from Dublin, Ireland, via Wikimedia Commons — CC BY-SA 2.0（<a href="https://commons.wikimedia.org/wiki/File:THOMOND_BRIDGE_AND_KING_JOHN%27S_CASTLE_(14438672533).jpg" target="_blank" rel="noopener">出典</a>）</li>
+          <li>リムリック、ペリー・スクエアの街並み： Photo: Stevesphotography, via Wikimedia Commons — CC BY-SA 4.0（<a href="https://commons.wikimedia.org/wiki/File:Georgian_House_at_Pery_Square,Limerick.jpg" target="_blank" rel="noopener">出典</a>）</li>
+          <li>シャノン川・夕景： Photo: mandoft from El Campello (Alicante), Spain, via Wikimedia Commons — CC BY-SA 2.0（<a href="https://commons.wikimedia.org/wiki/File:Vistas_de_Limerick_(46531598245).jpg" target="_blank" rel="noopener">出典</a>）</li>
+          <li>シャノン川・夜： Photo: Claire WatersLulu, via Wikimedia Commons — CC BY-SA 4.0（<a href="https://commons.wikimedia.org/wiki/File:River_Shannon_by_night_in_Limerick.JPG" target="_blank" rel="noopener">出典</a>）</li>
+          <li>ダブリン、グラフトン・ストリート： Donaldytong, CC BY-SA 3.0, via Wikimedia Commons（<a href="https://commons.wikimedia.org/wiki/File:Grafton_St,_Dublin.jpg" target="_blank" rel="noopener">出典</a>）</li>
+          <li>ダブリン、テンプル・バー地区の夜： Trevah, Public domain, via Wikimedia Commons（<a href="https://commons.wikimedia.org/wiki/File:Temple_Bar_Dublin_at_Night.jpg" target="_blank" rel="noopener">出典</a>）</li>
+          <li>ロンドン、カムデン・ロックの運河： Photo by Jarle Hammen Knudsen (dubidubno), CC BY 4.0, via Wikimedia Commons（<a href="https://commons.wikimedia.org/wiki/File:Camden_Lock_looking_west_from_road_bridge,_2006.jpg" target="_blank" rel="noopener">出典</a>）</li>
+          <li>ロンドン、地下鉄ピカデリー・サーカス駅入口： Photo by Julian Herzog, CC BY 4.0, via Wikimedia Commons（<a href="https://commons.wikimedia.org/wiki/File:Piccadilly_Circus_Tube_Station_West_Entrance_2020.jpg" target="_blank" rel="noopener">出典</a>）</li>
+          <li>ロンドン、リージェント・ストリートの夜： Photo by 0x010C, CC BY-SA 4.0, via Wikimedia Commons（<a href="https://commons.wikimedia.org/wiki/File:2016-02_red_double-decker_bus_london_01.jpg" target="_blank" rel="noopener">出典</a>）</li>
+          <li>フェリー全景（ダブリン港を出港）： Bob Castle / CC BY-SA 4.0, via Wikimedia Commons（<a href="https://commons.wikimedia.org/wiki/File:Stena_Superfast_X_leaving_Dublin_Port_bound_for_Holyhead.jpg" target="_blank" rel="noopener">出典</a>）</li>
+          <li>フェリー後部デッキからの港： Ridiculopathy / CC0, via Wikimedia Commons（<a href="https://commons.wikimedia.org/wiki/File:Dublin_Port_as_seen_from_the_back_of_MV_Ulysses_(2000),_an_Irish_Ferries_ship_leaving_Dublin_02.jpg" target="_blank" rel="noopener">出典</a>）</li>
+          <li>古い劇場の内装： Stratfordeast, CC BY-SA 3.0, via Wikimedia Commons（<a href="https://commons.wikimedia.org/wiki/File:Theatre_Royal_Stratford_East_auditorium_photograph_by_Jamie_Lumley.jpg" target="_blank" rel="noopener">出典</a>）</li>
+        </ul>
+        <p>生成画像（AI）― 全8点</p>
+        <ul class="creditlist">
+          <li>暗い部屋でスマホを持つ手元（第1章扉・トップ併用なし）</li>
+          <li>夜のフェリー甲板の二人のシルエット（第4章）</li>
+          <li>ロンドンの路上に置かれたギターケース（第5章）</li>
+          <li>窓から光の差す古い音楽教室（第7・8・13章、光の条件を変えて使用）</li>
+          <li>ギターを弾く手元（第8章、人物ページ。第8章では別クロップも使用）</li>
+          <li>雨のダブリンのカフェ（第10章）</li>
+          <li>スポットライトの差す舞台袖（第12章）</li>
+          <li>ギターを背負って川沿いを歩く後ろ姿（人物ページ）</li>
+        </ul>
+        <p>生成画像はいずれもAI生成のオリジナルであり、実在の俳優・人物の写真ではありません。顔が判別できる表現は使用していません。</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer id="siteFooter">名のない道 — 梟玄　／　シネマティックWeb小説<br>本文：全13章・295段落を原稿どおり収録<br>写真：Wikimedia Commons（クレジットは制作ノートに明示）／ 場面画像：AI生成</footer>
+
+<div id="dock">
+  <span class="lbl" id="dockChapter">第一章</span>
+  <span class="lbl" id="dockSound">音響 OFF</span>
+  <button class="iconbtn" id="dockTop" title="ページ上部へ" aria-label="ページ上部へ">↑</button>
+</div>
+
+<div id="scrim"></div>
+<aside id="drawer" aria-label="読書設定">
+  <button class="iconbtn x" id="drawerClose" aria-label="設定を閉じる">✕</button>
+  <h3>読書設定</h3>
+  <p>設定はこの端末に保存され、次回も引き継がれます。</p>
+  <div class="grp"><div class="t">文字サイズ</div>
+    <div class="seg" id="fsSeg">
+      <button data-fs="16">小</button><button data-fs="18">標準</button><button data-fs="20">大</button><button data-fs="22">特大</button>
+    </div></div>
+  <div class="grp"><div class="t">演出モード</div>
+    <div class="seg" id="modeSeg">
+      <button data-mode="cinematic">シネマティック</button><button data-mode="light">ライト</button><button data-mode="text">テキスト</button>
+    </div>
+    <p>シネマティック：背景の変化と音響が使えます。ライト：静止した背景で、動きを止めます。テキスト：演出と音響を排し、紙のような画面で文章に集中できます。本文と順序は全モードで同一です。</p></div>
+  <div class="grp"><div class="t">音響</div>
+    <div class="seg">
+      <button id="sndToggle">音響をオンにする</button>
+      <button id="sndMute">ミュート</button>
+    </div>
+    <p style="margin-top:14px">音量</p>
+    <input type="range" id="vol" min="0" max="100" value="60" aria-label="音量">
+    <p>音はブラウザ内で生成される環境音と短い旋律モチーフのみです。既存楽曲は使用していません。音が出なくても読書は継続できます。</p></div>
+  <div class="grp"><div class="t">キーボード操作</div>
+    <p>← ／ → ： 前の章・次の章へ（読書画面）<br>Esc ： 設定を閉じる<br>Tab ： ボタンへの移動</p></div>
+  <div class="grp"><div class="t">読書位置</div>
+    <p id="posInfo">—</p>
+    <div class="seg"><button id="resetPos">読書位置を消去</button></div></div>
+</aside>
+<div id="toast" role="status"></div>
+
+<script>
+var MANUSCRIPT = {
+ "title": "名のない道",
+ "author": "梟玄",
+ "chapters": [
+  {
+   "label": "一",
+   "paragraphs": [
+    "九月の終わりの夜、十一時を過ぎて、キーランはソファに沈んだまま同じ動画を三度目に再生した。",
+    "クリスが笑っている。再生回数は三百万を超えていた。インタビュアーが訊く。音楽の原点は？",
+    "クリスは半拍だけ間を取った。その半拍の使い方が、十九年前のあいつにはなかった。",
+    "「リムリックです。十八のころ、橋の下で弾いてました。誰も聴いてなかった」",
+    "キーランは止めず、最後まで見た。",
+    "クリスはレンズを見ている。インタビュアーではなく、レンズの向こうにいる顔のない三百万人に向かって話している。昔からそうだった。見えない相手に向けて、まっすぐ弾ける人間だった。",
+    "ソーズフィールド橋の下の路上で、隣で二本目のギターを弾いていたのは、自分だった。",
+    "スマホを裏返してテーブルに置いた。置いた途端に、画面の下で何かが続いている気がして、拾って、また再生した。",
+    "窓の下を川が流れている。三日続いた雨でシャノンは茶色く膨れ、普段より低い音を立てていた。リムリックのどこにいても、この音は聞こえる。",
+    "建物の二階が教室で、三階がキーランの部屋だった。路地には名札がない。三年前の冬に金属のプレートが落ちて、市は直しに来ず、それでも郵便は毎朝届く。配達の男が覚えているからだ。教室の看板には、だから「川沿い、緑のドアの二階」と書き足してある。",
+    "三度目の再生が終わって、画面が暗くなった。",
+    "暗い画面に、自分の顔が映っていた。"
+   ]
+  },
+  {
+   "label": "二",
+   "paragraphs": [
+    "二〇〇五年の秋、教区会館で地区のアマチュア・コンテストがあった。",
+    "折りたたみ椅子が百脚。マイクがときどき悲鳴を上げた。十七歳のキーランは父のギターを借りて弾き語り、三位に入った。賞状は思っていたより厚い紙で、持ち方に困った。",
+    "外に出ると、駐車場の端、ごみ容器の横のコンクリートブロックに、赤毛の少年が一人で座っていた。さっき三番目に歌った子だ。サビの前でピッチが半音ずれて、客の半分が気づき、半分は気づかなかった。右手の指が、ズボンの縫い目を叩いている。",
+    "「ピッチは外れてた」とキーランは言った。「でも、あの中ではお前が一番良かった」",
+    "「慰めてんのか」",
+    "「採点した」",
+    "少年は笑った。そばかすが寄った。「審査員は三人いたぞ」",
+    "「あの三人は声の大きさしか見てない」",
+    "「声量不足、って書いてあった」少年はポケットの採点表を叩いた。「クリス。で、どこが外れてた」",
+    "キーランは答えた。二番の頭、サビへ上がる直前の半音。そのあとで戻したけど、戻し方が良かった。戻すときに顎を引いたろう、あれで声が丸くなった。",
+    "クリスは尻ポケットから紙切れと短い鉛筆を出し、膝の上で何か書いた。",
+    "「何て書いてる」",
+    "「変えたいところ」",
+    "「できなかったところじゃなくて？」",
+    "「同じだろ」",
+    "同じではない、とキーランは思った。どう違うのかは、うまく言えなかった。",
+    "「信じないけどな」と、クリスは紙をたたみながら言った。「ありがとう」",
+    "信じないと言いながら礼を言うやつに、キーランは初めて会った。",
+    "駐車場にヘッドライトが入ってきた。父の車だった。助手席に乗ると、父は「よくやった」と言って、膝の上の賞状を見た。紙一枚のはずなのに、どういうわけか重かった。"
+   ]
+  },
+  {
+   "label": "三",
+   "paragraphs": [
+    "最初のクリスは、うまくなかった。",
+    "声は細く、リズムは前のめりで、歌い出しのたびに半拍早かった。それでも週に二度、クリスはキーランの家の前に自転車で来た。",
+    "キーランの家では、いつも誰かが何かを弾いていた。父は金曜にパブのセッションでフィドルを弾き、母は火曜に聖歌隊の伴奏をした。台所の棚には父の古いロバーツのラジオがあって、土曜の朝は伝統音楽の番組が流れていた。この家で育てば、進行も装飾音も、教わるより先に耳が覚えてしまう。",
+    "クリスの家には、音楽がなかった。図書館で借りた教本のコードを、一つずつ指に覚えさせていた。",
+    "ある日、クリスが書いた曲の進行を弾いて、キーランは笑った。「それ、親父が金曜に弾いてるやつと同じだ」",
+    "「知らない」",
+    "「同じなんだって」",
+    "「偶然だろ」クリスは笑わなかった。「俺は自分で見つけたんだ」",
+    "押し入れにギターが一本あることを、キーランは半年後に知った。クリスの父親は昔バンドにいた。クリスはそれを一度も訊かず、父親も話さなかった。",
+    "「訊けばいいだろ。親父さんの音楽なんだから」",
+    "「俺の音楽は、俺のだ」",
+    "腹が立った、とキーランは後で思い出す。なぜ腹が立ったのかは、ずいぶんあとまでわからなかった。",
+    "金曜のパブのセッションで、キーランは二人目のギターを弾いた。弾きながら、客の顔を見た。奥の席の老婆が、目を細めたり開いたりする。細めたら、半拍ためる。開いたら、少し急ぐ。顔の動きに合わせて音を変えていくことが、彼にとっての演奏だった。",
+    "クリスは壁を見て弾いた。パブの奥の、誰もいない壁を。",
+    "終わるたびに、クリスは訊いた。「どこが」",
+    "キーランは答えた。八小節目のコードチェンジが遅い。二番はテンポが走った。サビは良かった、息を吸う場所を変えたからだ。クリスはそれを紙に書いた。",
+    "それが二人の習慣になった。ほかの誰もクリスにそれを言ってくれなかったし、キーランも、ほかの誰かに言ったことがなかった。"
+   ]
+  },
+  {
+   "label": "四",
+   "paragraphs": [
+    "十八の夏、二人はロンドンへ行くことにした。リムリックから長距離バスでロスレアに出て、夜のフェリーに乗った。座席は食堂の奥の硬い椅子で、二人とも眠れず、甲板に上がった。",
+    "港の灯が小さくなると、風と機関の唸りだけになった。排気と潮の匂いがした。キーランは、川の音がしない夜を過ごすのが初めてだと気づいた。",
+    "「聴けよ」とクリスが言った。ポケットから紙切れを出した。何行かに線が引いて消してある。「まだ半分だけど」",
+    "クリスは歌った。出だしの三小節目でピッチが揺れて、それから上がった。声が風に持っていかれそうになって、持っていかれなかった。歌詞のない部分は、口笛でなぞった。指はズボンの縫い目で拍を叩いている。",
+    "歌の途中で、クリスがこちらを見た。",
+    "横を向いて、まっすぐ、キーランを。",
+    "そのまま一小節を歌って、それから海に向き直った。",
+    "歌い終えると、クリスは紙を持ったまま立っていた。",
+    "「どこが」",
+    "手すりの錆が掌に刺さった。三小節目、と言えばよかった。揺れて、揺れてから上がったところ、と。",
+    "「まだ、わからない」とキーランは言った。",
+    "クリスはしばらくキーランを見て、「そうか」と言った。紙をたたんでポケットに入れた。",
+    "船が横に揺れた。遠くで、灯台が一度だけ回った。"
+   ]
+  },
+  {
+   "label": "五",
+   "paragraphs": [
+    "ロンドンの路上には、顔がなかった。",
+    "カムデンの運河沿い、地下鉄の出口、通りの角。人は歩きながらコインを落とし、その目はもう次の場所を見ていた。リムリックのパブでは、老婆の目が細くなるたびに音を変えることができた。ここには変える相手がいなかった。キーランが出した音は、出したそばから消えた。",
+    "クリスは変わらず弾いた。見えない群衆の頭上を越えて、どこか遠い一点に向けて。終わるたび、ポケットから紙を出した。「どこが」と訊く回数は減らなかったが、キーランの答える声は、少しずつ小さくなった。",
+    "十月、クリスが撮った動画が、一晩で三千回再生された。「上げるつもりなかったんだ」とクリスは言った。二人で数字を見て、それから外に出た。",
+    "十二月、レーベルから連絡が来た。クリスにだけ。",
+    "キーランがそれを知ったのは、クリスの口からではなかった。同じ通りで弾いていたバイオリン弾きが、ある朝「お前の相方、契約するんだってな」と言った。",
+    "その晩、キーランは荷物をまとめた。クリスには言わなかった。",
+    "リムリックに戻って、台所で母の聖歌隊の楽譜を整理した。三月、棚の上のラジオから、クリスの声が流れた。初めてのシングルだった。母が手を止めて、「クリスじゃないの」と言った。",
+    "声は、フェリーの上で聴いたときより強かった。三小節目で揺れず、一度で上がった。",
+    "キーランはラジオを止め、父の古いラジオを棚から下ろして、廊下の押し入れの奥にしまった。母は、何も訊かなかった。"
+   ]
+  },
+  {
+   "label": "六　クリス",
+   "paragraphs": [
+    "契約書にサインをした夜、クリスはホテルの部屋に一人でいた。",
+    "マネージャーが祝杯を勧めた。断った。ギターを手に持ったまま、弾かずに、窓の外を見た。雨でにじんだ街灯が、光の輪郭を失っていた。",
+    "最初の落選の夜のことを思い出した。採点表の「声量不足」の文字。あとで破って捨てた。その前に、駐車場で、一人の少年が来た。ピッチは外れてた、でもお前が一番良かった、と言った。信じなかった。それでも、あの夜から「どこが」と訊くようになった。",
+    "アルバムが出て、売れた。人は「うまくなった」と言った。自分でもそう思った。レコーディングのたびに、エンジニアに訊いた。どこが悪い。",
+    "「完璧です」とエンジニアは言った。",
+    "「どこが」",
+    "「どこも」",
+    "クリスは紙と鉛筆を出した。書くことがなかった。",
+    "十八から三十五まで、ほとんど眠らなかった。友人が夏に海へ行く話をしているとき、スタジオにいた。母の誕生日に二年続けて行けなかった。好きな人がいて、一年続いて、ツアーが始まって三ヶ月で終わった。どうして、と訊かれて、答えられなかった。",
+    "三十六の秋、ツアーの途中で、知らない街のホテルで目を覚ました。窓の外の夜景を、クリスは一秒、思い出せなかった。自分がどこにいるのか。その一秒が、あとになっても胸から抜けなかった。",
+    "デモを十曲書いた。三曲は形になりかけた。残りの七曲は、誰にも聴かせずにクラウドから消した。聴かせても「完璧です」と言われるのが、わかっていたから。",
+    "三曲を送る相手は、いなかった。",
+    "今年の夏、インタビューで訊かれた。音楽の原点は？　クリスは前の晩に、答えを決めていた。「リムリックです。橋の下で弾いてました。誰も聴いてなかった」。二人の話にすれば、三分では足りない。それが理由だった。もう一つ理由があったが、そちらは自分でも、まだ言葉にしていなかった。",
+    "言い終えて、半拍、間が空いた。その間に、フェリーの甲板が浮かんだ。"
+   ]
+  },
+  {
+   "label": "七",
+   "paragraphs": [
+    "ダブリンの音楽院での四年間を、キーランはあまり語らない。語るほどのことがなかった。毎日弾いて、聴いて、また弾いた。",
+    "二年目の発表会で、課題曲を弾いた。ミスはなかった。教授が隣の学生に何か囁き、その学生が頷いた。その夜、自分の録音を聴いた。正確だった。正確すぎて、音の向こうに誰もいなかった。再生機の音量を、ゆっくり下げた。",
+    "翌週、同じクラスのマリアが寮の廊下で泣いていた。「どこがダメだったの。先生は『よかった』しか言わない」",
+    "キーランは彼女の演奏を思い出した。「三ページ目の左手。急いでる。右はちゃんと待ってるのに、左だけ先に行ってる」",
+    "マリアは泣き止んで、顔を上げた。「それ。それが聞きたかった」",
+    "三週間後、彼女はコンクールで入賞した。キーランには、カードが一枚届いた。",
+    "卒業の日、教授の一人が言った。「君は、他人の演奏を聴く耳がいい」",
+    "褒め言葉だった。キーランは礼を言った。演奏家に向ける言葉ではない、とも思った。帰りのバスで、窓に額をつけたまま、リムリックまで二時間動かなかった。",
+    "三十三歳の春、リムリックの路地の古い建物の二階を借りた。窓から川が見える。石の壁で、冬は芯まで冷えた。",
+    "ステイシーが内覧に来た。二つ年上の幼なじみで、父親同士が高校の友人だった。ギターは今も弾く。ただ、仕事にはしていない。地域の催しを企画する会社で働いている。音楽のある場を作る仕事と、その中に立つ仕事は別だ、と彼女は昔言った。",
+    "窓から川を見て、ステイシーは煙草を取り出し、火をつけずに戻した。「リムリックで教室を開く理由は？」",
+    "「成り行き」",
+    "「そう」とステイシーは言った。「成り行きって便利な言葉だね。家賃は？」",
+    "それで話は終わった。",
+    "教え始めて五年になる。生徒は三十人ほどに増えた。教えながら、ときどき考える。自分は舞台に立ちたいのか、立てないのか、立たないのか。そちらへ向かいかけると、左手が勝手に、弦の上で音階を確かめ始める。一音、また一音。"
+   ]
+  },
+  {
+   "label": "八",
+   "paragraphs": [
+    "ダラ・カヴァナは四月に来た。十五歳。背が低く、灰色の目が、少し離れたところを見ている。右手の指は、いつもテーブルを叩いていた。五拍子だった。",
+    "最初のレッスンで、キーランが短いフレーズを弾いた。ダラは一度聴いて、そのまま弾いた。そっくりだった。ただ、どこか違った。",
+    "「今のは、俺と同じか」",
+    "「同じです」",
+    "「違う」",
+    "「どこがですか」",
+    "ダラは本当に知りたそうに訊いた。キーランは答えられなかった。その間に、ダラは鞄を探って、折りたたんだ紙を机に置いた。数学の小テストで、赤いペンで二十三と書いてあった。",
+    "「見せなくていい」",
+    "「あ、違います。これじゃなくて」ダラは楽譜を出した。小テストは机の端に残った。",
+    "その夜、キーランは三時間かけて気づいた。自分の癖だ。コードを押さえるとき、左手首がわずかに内側へ傾く。その傾きが、弦の倍音を一つ殺す。正確ではあるが、音の上に薄く乗るはずのもう一つの音が出ない。ダラは、それを一度聴いて「同じ」と言った。同じように弾けた、というのは、傾きまで同じだったということだった。",
+    "翌週、キーランは手首を起こして弾いた。倍音が戻った。ダラは迷わず、起こした手首で弾いた。その次の週、傾けて弾くと、ダラは傾けて弾いた。選べば、どちらも再現できた。",
+    "「どっちが好きだ」と訊いた。",
+    "「どちらでもいいです」とダラは言った。「同じ音ですから」",
+    "違う、と言いかけて、キーランは黙った。",
+    "「今日は、ここまで」",
+    "ダラを帰したあと、ギターを持ったまま十分、立っていた。それから、床に置いてあったダラのギターケースを、爪先で蹴った。",
+    "大きな音がして、ケースが壁に当たった。",
+    "指先が震えていた。椅子に座ると、立てなくなった。川沿いを一時間歩いて、石を投げた。戻ると、ケースは壊れていなかった。当然だった。鍵をかけて、外に出た。",
+    "翌週、ダラは何事もなかった顔で来て、最初に出したのは、別の数学の小テストだった。十九点。「追試です」と言って、机に置いた。「少し、下がりました」",
+    "キーランは笑った。笑ってしまった自分に、腹が立った。"
+   ]
+  },
+  {
+   "label": "九",
+   "paragraphs": [
+    "六月の発表会に、ダラは来なかった。",
+    "翌日、教室に来たダラの顔色は悪くなかった。「体調が」と言った。",
+    "「嘘をつくな」",
+    "ダラは黙った。指が机を叩いた。五拍子。",
+    "「怖かったです」",
+    "「なんで連絡しなかった」",
+    "「連絡したら、来なきゃいけなくなると思って」",
+    "「来なきゃいけないんだ」とキーランは言った。「お前が来なかったから、お前の曲を、別の子が弾いた。お前より下手だった。でも、来た」",
+    "ダラは下を向いた。",
+    "「どうして、そこまでしてくれるんですか」",
+    "「お前が、惜しいから」",
+    "言いながら、キーランは一瞬、その「惜しい」が誰に向いているのか、わからなくなった。",
+    "ダラは指を止めた。「それは、キーランさんのためですか、僕のためですか」",
+    "少し間があった。",
+    "「両方」",
+    "「いつまで、機会をくれるんですか」",
+    "「お前が来られるまで」"
+   ]
+  },
+  {
+   "label": "十",
+   "paragraphs": [
+    "十月の終わり、ステイシーに呼び出されて、ダブリンに出た。音楽院の裏手の、古いカフェだった。ステイシーは席を取って、「クリスが会いたがってる」とだけ言った。",
+    "「なんで」",
+    "「知らない」",
+    "知らないのか、知っていて言わないのか、判断がつかなかった。",
+    "クリスは先に来ていた。画面で見るより、肩幅が狭かった。猫背で、コーヒーに砂糖を三つ入れて、かき混ぜている。テーブルの上に、スマホが裏返して置いてあった。",
+    "「久しぶり」とクリスは言った。",
+    "「ああ」",
+    "しばらく、スプーンが皿に当たる音だけがした。",
+    "「お前の曲、最近は聴いてない」とキーランは言った。",
+    "「聴いてるだろ」",
+    "「聴いてない」",
+    "「顔に書いてある。俺の声を知りすぎてるやつの顔」",
+    "キーランは視線を窓にそらした。コーヒーに口をつけなかった。",
+    "「一つだけ訊く」とキーランは言った。「あの動画。橋の下で、誰も聴いてなかったって」",
+    "「言ったな」",
+    "「俺は、そこにいた」",
+    "「知ってる」",
+    "「二本目のギターを弾いてた」",
+    "「知ってる」クリスはスプーンを置いた。「三分のインタビューなんだ。お前を入れたら、二人の話になる。長くなる」",
+    "「それだけか」",
+    "クリスは答えなかった。",
+    "「それだけじゃないだろ」",
+    "「お前が横にいると」クリスは言いかけて、止めた。カップの縁を指でなぞった。「俺は、自分が何をやってるのか、わからなくなるんだ。最初からそうだった。お前が一人で、全部見てるみたいで」",
+    "「だから消したのか」",
+    "「違う……いや」クリスは言葉を探して、口を閉じた。「違わないかもしれない」",
+    "テーブルで、二つのカップが冷めていた。",
+    "「お前がいない方が、うまくいった。それは本当なんだ」とクリスは言った。「本当だから、言えなかった」",
+    "キーランは立ち上がり、財布から紙幣を出して、自分のカップの横に置いた。",
+    "「俺の分は、俺が払う」",
+    "外に出た。クリスのスマホは、最後まで裏返しのままだった。"
+   ]
+  },
+  {
+   "label": "十一",
+   "paragraphs": [
+    "雨が降っていた。ステイシーは傘を持っていたが、さしていなかった。",
+    "「聞こえてたか」",
+    "「最後のとこだけ」",
+    "歩き出すと、ステイシーが並んだ。",
+    "「最悪だった」とキーランは言った。",
+    "「最悪だったね」とステイシーは言った。「でも、あんたが出て行ったのは、悪くなかった。あの人、言ったでしょ。お前がいない方がうまくいった、って。あんたが席にいたら、言えなかった言葉。言えるようになるのに、十九年かかった」",
+    "「慰めにならない」",
+    "「慰めてない。事実」信号で止まり、ステイシーは傘を開いて、キーランの方に傾けた。「それより、十一月二十二日、うちの会社が押さえてるホールにキャンセルが出た。三百席。教室の発表会、そこでやりなさい」",
+    "「ダラが出ない」",
+    "「出るまで待つ」",
+    "「それに、俺が」",
+    "「あんたも出なさい」",
+    "「出ない」",
+    "信号が青になった。ステイシーは歩き出した。「出る、って顔してる」",
+    "その夜の十一時、クリスから電話が来た。",
+    "「さっきは」",
+    "「いい」",
+    "「よくない」",
+    "「お前が出て行ったのは、正しかった」",
+    "「正しいって言うな」とキーランは言った。",
+    "受話器の向こうで、雨の音がした。",
+    "「フェリーのとき」とクリスが言った。「俺が歌ったやつ。お前、『まだわからない』って言ったよな。ずっと、あれが引っかかってた」",
+    "キーランは窓の外を見た。川の音がしていた。",
+    "「三小節目」",
+    "「え？」",
+    "「出だしの三小節目。最初、揺れた。それから上がった。揺れて、上がったところが、よかった」",
+    "クリスは黙っている。",
+    "「それと、あの時だけ、お前、こっちを見て歌った」",
+    "長い沈黙があった。",
+    "「後にも先にも、あの一回だけだった」とキーランは言った。「言えなかった」",
+    "クリスの息が聞こえた。笑っているのか、そうでないのか、わからなかった。",
+    "「紙に、書いていいか」とクリスが言った。",
+    "「好きにしろ」",
+    "鉛筆が紙の上を走る音が、電話越しにはっきり聞こえた。",
+    "十分後、キーランのスマホが震えた。音源が三つ、届いた。メッセージはなかった。",
+    "朝までかけて、三曲を聴いた。夜が明けてから、返事を書いた。",
+    "一曲目、一分四十秒。ベースが歌の前に出すぎる。",
+    "二曲目、サビ前の間。もう半拍、待て。",
+    "三曲目、全部いい。ただ、歌詞のない部分は、そのままにしておけ。",
+    "夕方、一行だけ返ってきた。",
+    "「信じないけど、ありがとう」"
+   ]
+  },
+  {
+   "label": "十二",
+   "paragraphs": [
+    "本番の四日前、ダラは教室のドアを開けたまま、入ってこなかった。",
+    "「出られません」",
+    "「入れ」",
+    "「出られないって、言いに来たんです。前は連絡しなかったから、今回は言おうと思って」",
+    "「偉い」とキーランは言った。「でも、出ろ」",
+    "「どうしてですか。キーランさんには関係ないでしょう、僕が出るかどうか」",
+    "「俺も出る」",
+    "ダラの指が止まった。",
+    "「お前が出るなら、俺も出る。出ないなら、俺も出ない」",
+    "「ずるいです」",
+    "「ずるいな」",
+    "ダラはドアの枠を、しばらく指で叩いていた。五拍子。それから、入ってきた。「出ます」と言った。怒った顔だった。",
+    "十一月二十二日、古い講堂の袖は、埃とニスの匂いがした。三百席。木の壁。高い天井。",
+    "開演三十分前、ダラが来た。顔が青かった。",
+    "袖に、帽子を目深にかぶったクリスがいた。ステイシーが裏口から入れたのだと言った。クリスはダラを見て、「お前が例の子か」と言った。",
+    "「緊張してるか」",
+    "「してます」",
+    "「俺もだ」",
+    "「本当ですか」",
+    "「本当だ。いつもだ」",
+    "ダラの顔の青さが、少しだけ違う色になった。",
+    "プログラムのダラの欄には、題名がなかった。「題名：まだありません」と、ダラ本人が書いたのだった。",
+    "ダラが先に出た。",
+    "舞台に立つと、横顔が変わった。十五歳の体の中に、別のものが入ってくるような変わり方だった。",
+    "最初の和音で、キーランは息を止めた。",
+    "低音の上に乗るはずの倍音が、鳴らなかった。傾いた手首が殺した響き。自分の癖だ。ダラは、それを選んで弾いている。次の小節で、手首が起きた。音が、遠くへ飛んだ。",
+    "傾いた音と、起きた音が、同じ曲の中に並んでいた。どちらが好きかと訊かれて「どちらでもいいです」と答えた少年は、もう答えを持っていた。持っていて、両方を使っていた。",
+    "木の壁が音を返してくる。返ってくるまでの間を、ダラは知っていて、その中に次の音を置いた。五分間、三百人は動かなかった。",
+    "袖に戻ってきたダラに、キーランは言った。「最初の和音」",
+    "「はい」",
+    "「あれ、わざとか」",
+    "「はい」ダラは目をそらした。「あそこだけは、変えたくなくて」",
+    "「どうして」",
+    "「どうしてって……」ダラは本気で困った顔をした。「どこが、って訊かれたら、困りますけど」",
+    "キーランは声を出して笑った。笑いながら、鼻の奥が熱くなった。",
+    "「あいつは本物だな」とクリスが低く言った。",
+    "「うん」",
+    "「ロンドンで、一緒に路上で弾いてた頃」クリスは帽子のつばを下げた。「足を止めた客は、たいがい、お前の側に立ってた。気づいてたか」",
+    "「いや」",
+    "「俺は気づいてた。それで、うまくいかなかった。お前のせいじゃない」",
+    "クリスは客席の暗がりへ消えた。",
+    "キーランは一人で、弦を確かめた。一本ずつ。",
+    "ステージに出ると、明かりが顔に当たった。客席は見えない。三百人がいる。",
+    "一音目を鳴らした。曲は、父がパブで弾いていたフィドルの曲を、ギターに直したものだった。",
+    "最初の小節で、リズムが乱れた。手が強張っている。弾き続けた。音は出るたびに消えた。空気が吸って、返さなかった。二小節目。三小節目。手の強張りは消えなかったが、形が変わった。届いているかどうかを確かめたい焦りではなく、届けたい、という別のものが動いた。",
+    "曲の中盤で、目が慣れてきた。",
+    "最前列の男が、少し前のめりになっていた。二列目の女性の目が、細くなった。パブの奥の老婆と、同じ細め方だった。半拍、ためた。女の目が開いた。男が、もう少し前に来た。",
+    "その動きに向けて弾いた。",
+    "良くはなかった。クリスほどうまくはない。ダラが持っているものも、自分にはない。それは今夜も変わらなかった。",
+    "ただ、目の前の男が、椅子の上で、少しずつ前に来ていた。",
+    "袖に戻ると、ステイシーが言った。「後ろの方に、赤毛、いたよ」",
+    "「見えなかった」",
+    "「立ってた。ずっと、目を閉じてた」"
+   ]
+  },
+  {
+   "label": "十三",
+   "paragraphs": [
+    "三日後の夕方、生徒が帰ったあとに、知らない番号から電話が来た。",
+    "「キーランか」",
+    "「そうだ」",
+    "「ブレンダンだ。クリスのツアーを回してる。春からヨーロッパ、十四都市。ギターが一人抜ける」",
+    "返事をしなかった。",
+    "「給料は悪くない。ただ、勘違いするな。スポットライトは当たらない。客はお前を見ない。パンフレットに名前は載らない。拍手も、お前のものじゃない」",
+    "気づくと、指が机の端を叩いていた。五拍子だった。ダラの癖だ。",
+    "「ステージの図面を送ってくれ」",
+    "「図面？」",
+    "「立ち位置がわかるやつ」",
+    "五分後に、PDFが届いた。下手の端。センターのマイクスタンドから、三メートル。",
+    "キーランは教室の椅子を一つ、部屋の中ほどに置いた。三メートルを、歩数で測った。四歩。そこから、椅子に向かって、ギターを持って立った。",
+    "椅子の上に、顔はなかった。弾いていると、しばらくして、顔が見えた気がした。赤毛の。猫背の。こちらを見ない顔。三小節目の前で、顎がわずかに引かれる。",
+    "一時間、弾いた。",
+    "ステイシーに電話をすると、「やっと」とだけ言われた。三月まで、代わりの講師を探しておく、と彼女は言った。",
+    "客席の顔が一つも見えない夜が、きっと来る。その夜、自分の手が何をするのか、キーランにはわからなかった。",
+    "返事を書いた。「行きます」。すぐに「了解。契約書は来週」と返ってきた。",
+    "その週、押し入れからラジオを出して、台所の棚に戻した。土曜の朝、伝統音楽の番組が、掠れながら流れた。",
+    "次の木曜、ダラが来た。",
+    "楽譜を出す前に、キーランは言った。「二月から、教室を休む。三月か、もっと」",
+    "ダラの指が止まった。「どのくらいですか」",
+    "「わからない」",
+    "「そうですか」ダラは楽譜を出さず、スマホを出した。「毎週、録音を送ります。どこが悪いか、書いて返してください」",
+    "「毎週は」",
+    "「毎週です。返事が遅れたら、数学の点数みたいな演奏を送ります」",
+    "「脅しか」",
+    "「はい」",
+    "キーランは笑った。「ツアー中は時差がある」",
+    "「じゃあ、時差の分は、待ちます」",
+    "ダラが弾いた。短いフレーズだった。キーランは訊いた。「どこが、違う」",
+    "ダラは少し考えた。「二小節目。僕が、先に行きました」",
+    "「そうだ」",
+    "夕方、ダラを送り出して、階段を降りた。路地に出ると、川の匂いがした。冬の川は、雨のあとほど濁らず、静かに重く流れていた。",
+    "路地の壁には、プレートの落ちたあとが、四角く白く残っている。三年、誰も付け直さない。それでも郵便は、毎朝、ちゃんと届く。"
+   ]
+  }
+ ]
+};
+
+/* ===== chapter staging (text and staging kept separate) ===== */
+var STAGE = [
+ {place:"リムリック ― 川沿いの自室／9月末の夜", bg1:"#232d3a", bg2:"#0d1117", glow:"#3d526b", river:true,  river1:"#31434f", river2:"#131c24", amb:"river", motif:null, intensity:"低"},
+ {place:"回想 ― 2005年秋、教区会館と駐車場", bg1:"#4a4238", bg2:"#211d18", glow:"#6b5b45", river:false, amb:null, motif:null, intensity:"低"},
+ {place:"リムリック ― 台所と金曜のパブ", bg1:"#453a2f", bg2:"#1d1813", glow:"#75593a", river:false, amb:null, motif:null, intensity:"低〜中"},
+ {place:"ロスレア沖 ― 夜のフェリー甲板", bg1:"#141a24", bg2:"#05070b", glow:"#2c3e55", river:false, amb:"sea", motif:"origin", beam:true, intensity:"高"},
+ {place:"ロンドン ― カムデンの運河と路上", bg1:"#3c4147", bg2:"#191c20", glow:"#565d63", river:false, amb:"city", motif:null, intensity:"中"},
+ {place:"クリス ― 雨のホテルの部屋", bg1:"#262b33", bg2:"#0f1216", glow:"#4d4438", river:false, amb:"rain", motif:null, intensity:"中"},
+ {place:"ダブリン音楽院 ― そしてリムリックの教室", bg1:"#5a6558", bg2:"#232a24", glow:"#8b9a7d", river:true, river1:"#5d7268", river2:"#26332c", amb:"river", motif:null, intensity:"低"},
+ {place:"リムリック ― 教室の夕方", bg1:"#4c3f31", bg2:"#1e1913", glow:"#7d6242", river:false, amb:null, motif:null, intensity:"中"},
+ {place:"リムリック ― 教室、対話", bg1:"#35322c", bg2:"#171512", glow:"#4c473c", river:false, amb:null, motif:null, intensity:"低（沈黙）"},
+ {place:"ダブリン ― 音楽院裏の古いカフェ", bg1:"#45464a", bg2:"#1b1c1f", glow:"#5f6066", river:false, amb:"cafe", motif:null, intensity:"中"},
+ {place:"リムリック ― 雨の夜、電話と三曲のデモ", bg1:"#26313f", bg2:"#0c1016", glow:"#41597a", river:false, amb:"rain", motif:"return", intensity:"高"},
+ {place:"ダブリン ― 古い講堂、11月22日の発表会", bg1:"#2b2118", bg2:"#0a0806", glow:"#8a6c3c", river:false, amb:null, motif:"duo", stage:true, intensity:"最高"},
+ {place:"リムリック ― 冬の夕方、川沿いの路地", bg1:"#3a4149", bg2:"#14181d", glow:"#5d6a72", river:true, river1:"#46545c", river2:"#1b2228", amb:"river", motif:"coda", intensity:"低〜中"}
+];
+var KANJI_NUM = ["一","二","三","四","五","六","七","八","九","十","十一","十二","十三"];
+
+/* ===== state ===== */
+var LS_POS="nanonaimichi_pos_v1", LS_SET="nanonaimichi_settings_v1";
+var settings={fs:18, mode:"cinematic", vol:60, sound:false};
+try{ var s=JSON.parse(localStorage.getItem(LS_SET)||"null"); if(s) settings=Object.assign(settings,s); }catch(e){}
+if([16,18,20,22].indexOf(settings.fs)<0) settings.fs=18;
+var pos={ch:0, ratio:0}; var hadSave=false;
+try{ var p=JSON.parse(localStorage.getItem(LS_POS)||"null"); if(p && typeof p.ch==="number"){ pos=p; hadSave=true; } }catch(e){}
+var cur = Math.min(Math.max(pos.ch||0,0), MANUSCRIPT.chapters.length-1);
+var readSet = {}; try{ readSet=JSON.parse(localStorage.getItem("nanonaimichi_read_v1")||"{}"); }catch(e){}
+var currentView="home";
+var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if(reduced) document.body.classList.add("reduced");
+
+function $(id){return document.getElementById(id);}
+function toast(msg){ var t=$("toast"); t.textContent=msg; t.classList.add("on"); clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove("on");},2600); }
+function saveSettings(){ try{ localStorage.setItem(LS_SET, JSON.stringify(settings)); }catch(e){} }
+function savePos(){ try{ localStorage.setItem(LS_POS, JSON.stringify(pos)); localStorage.setItem("nanonaimichi_read_v1", JSON.stringify(readSet)); }catch(e){} updatePosInfo(); }
+function updatePosInfo(){ var el=$("posInfo"); if(el) el.textContent = readSet && Object.keys(readSet).length ? ("現在： 第"+KANJI_NUM[pos.ch]+"章 付近（読了 "+Object.keys(readSet).length+" / 13章）") : "まだ保存された位置はありません。"; }
+
+/* ===== background ===== */
+var bgFlip=false;
+function applyStage(i){
+  var st=STAGE[i]; if(!st) return;
+  var r=document.documentElement.style;
+  r.setProperty("--bg1",st.bg1); r.setProperty("--bg2",st.bg2); r.setProperty("--glow",st.glow);
+  if(st.river){ r.setProperty("--river1",st.river1); r.setProperty("--river2",st.river2); }
+  var a=$("bgA"), b=$("bgB");
+  if(settings.mode==="cinematic" && !reduced){ var show=bgFlip?a:b, hide=bgFlip?b:a; show.classList.add("on"); hide.classList.remove("on"); bgFlip=!bgFlip; }
+  $("river").classList.toggle("on", !!st.river && settings.mode!=="text");
+  $("beam").classList.toggle("on", !!st.beam && settings.mode==="cinematic" && !reduced);
+  $("slight").classList.toggle("on", !!st.stage && settings.mode!=="text");
+  if(audio.on) audio.setAmbience(st.amb);
+  var mb=$("motifBar");
+  if(st.motif){ mb.style.display="flex"; $("motifNote").textContent = st.motif==="origin" ? "第4章 ― フェリーの甲板で生まれた旋律のモチーフ（生成音）" : st.motif==="return" ? "第11章 ― 同じモチーフが、異なる調とテンポで戻ります" : st.motif==="duo" ? "第12章 ― 「傾いた音」と「起きた音」、二つの音色で" : "第13章 ― モチーフは短く一度だけ、締めくくられます"; }
+  else mb.style.display="none";
+}
+
+/* ===== visual plan (images per chapter; paragraph indices are 0-based) ===== */
+var PHOTO_CREDIT={
+ "shannon_limerick_hero.jpg":"William Murphy from Dublin, Ireland, CC BY-SA 2.0, via Wikimedia Commons",
+ "limerick_street_01.jpg":"Stevesphotography, CC BY-SA 4.0, via Wikimedia Commons",
+ "shannon_dusk_01.jpg":"mandoft from El Campello (Alicante), Spain, CC BY-SA 2.0, via Wikimedia Commons",
+ "shannon_dusk_02.jpg":"Claire WatersLulu, CC BY-SA 4.0, via Wikimedia Commons",
+ "dublin_street_grafton.jpg":"Donaldytong, CC BY-SA 3.0, via Wikimedia Commons",
+ "dublin_street_temple_bar_night.jpg":"Trevah, Public domain, via Wikimedia Commons",
+ "london_camden_lock_west_2006.jpg":"Jarle Hammen Knudsen (dubidubno), CC BY 4.0, via Wikimedia Commons",
+ "london_underground_piccadilly_entrance.jpg":"Julian Herzog, CC BY 4.0, via Wikimedia Commons",
+ "london_bus_regent_street_night.jpg":"0x010C, CC BY-SA 4.0, via Wikimedia Commons",
+ "ferry_sea_stena_superfast_x.jpg":"Bob Castle / CC BY-SA 4.0, via Wikimedia Commons",
+ "ferry_deck_ulysses_dublin.jpg":"Ridiculopathy / CC0, via Wikimedia Commons",
+ "hall_interior_stratford_east.jpg":"Stratfordeast, CC BY-SA 3.0, via Wikimedia Commons"
+};
+function captionText(spec){ return spec.kind==="gen" ? "生成画像（AI）" : "PHOTO ― "+(PHOTO_CREDIT[spec.src]||""); }
+function makeFig(spec){
+  var f=document.createElement("figure"); f.className="fig "+spec.cls;
+  var w=document.createElement("div"); w.className="imgwrap";
+  var im=document.createElement("img"); im.src="assets/"+spec.src; im.alt=spec.alt||""; im.loading="lazy";
+  if(spec.grade) im.className="g-"+spec.grade; if(spec.pos) im.style.objectPosition=spec.pos;
+  w.appendChild(im); f.appendChild(w);
+  var cap=document.createElement("figcaption"); cap.textContent=captionText(spec); f.appendChild(cap);
+  var end=document.createElement("div"); end.className="cap-end"; f.appendChild(end);
+  return f;
+}
+function makeHallFig(spec, text){
+  var f=document.createElement("figure"); f.className="fig wide hallfig";
+  var w=document.createElement("div"); w.className="imgwrap";
+  var im=document.createElement("img"); im.src="assets/"+spec.src; im.alt=spec.alt||""; im.loading="lazy";
+  if(spec.grade) im.className="g-"+spec.grade;
+  w.appendChild(im);
+  var panel=document.createElement("div"); panel.className="hallpanel";
+  var p=document.createElement("p"); p.textContent=text; panel.appendChild(p); w.appendChild(panel);
+  f.appendChild(w);
+  var cap=document.createElement("figcaption"); cap.textContent=captionText(spec)+"（実在の劇場の内装であり、作中のホールそのものではありません）"; f.appendChild(cap);
+  var end=document.createElement("div"); end.className="cap-end"; f.appendChild(end);
+  return f;
+}
+function makeHeadband(spec){
+  var f=document.createElement("figure"); f.className="headband dynop";
+  var w=document.createElement("div"); w.className="imgwrap";
+  var im=document.createElement("img"); im.src="assets/"+spec.src; im.alt=spec.alt||""; if(spec.grade) im.className="g-"+spec.grade;
+  w.appendChild(im); f.appendChild(w);
+  var cap=document.createElement("figcaption"); cap.textContent=captionText(spec); f.appendChild(cap);
+  return f;
+}
+var VIS=[
+ {door:{src:"hero_smartphone.jpg",kind:"gen",alt:"暗い部屋で、発光するスマートフォンを握る手元（AI生成画像）"},
+  inserts:[{before:8,src:"shannon_limerick_hero.jpg",kind:"photo",cls:"wide",alt:"リムリック、シャノン川越しのトモンド橋とキング・ジョン城"}],
+  key:[6]},
+ {},
+ {},
+ {inserts:[{after:0,src:"ferry_deck_ulysses_dublin.jpg",kind:"photo",cls:"wide",alt:"フェリーの後部デッキから遠ざかる港と海面"},
+            {before:3,src:"ferry_deck.jpg",kind:"gen",cls:"fullpage ferrycrop",alt:"夜のフェリー甲板、手すりに立つ二人の後ろ姿のシルエット（AI生成画像）"}],
+  key:[10]},
+ {door:{src:"london_camden_lock_west_2006.jpg",kind:"photo",alt:"ロンドン、カムデン・ロックのリージェンツ運河"},
+  inserts:[{after:1,src:"london_underground_piccadilly_entrance.jpg",kind:"photo",cls:"vert",alt:"ロンドン、地下鉄ピカデリー・サーカス駅の入口"},
+            {after:2,src:"london_guitarcase.jpg",kind:"gen",cls:"small left",alt:"レンガ壁に立てかけられたギターケースと、横切る通行人の脚（AI生成画像）"}]},
+ {head:{src:"london_bus_regent_street_night.jpg",kind:"photo",alt:"雨の夜の街、濡れた路面に映るバスと街灯"},
+  key:[11]},
+ {head:{src:"dublin_street_grafton.jpg",kind:"photo",alt:"ダブリン、グラフトン・ストリートの昼の街並み"},
+  inserts:[{before:8,src:"shannon_dusk_01.jpg",kind:"photo",cls:"wide",pos:"50% 78%",alt:"夕景のシャノン川"},
+            {after:9,src:"classroom_window.jpg",kind:"gen",cls:"break",grade:"spring",alt:"窓から光の差す古い音楽教室、窓の外に川（AI生成画像）"}]},
+ {head:{src:"classroom_window.jpg",kind:"gen",grade:"eve",alt:"夕方の光の古い音楽教室、窓の外に川（AI生成画像）"},
+  inserts:[{after:1,src:"hands_guitar.jpg",kind:"gen",cls:"small",alt:"アコースティックギターを弾く手元のクローズアップ（AI生成画像）"},
+            {before:9,src:"hands_guitar.jpg",kind:"gen",cls:"small crop",alt:"フレットボードと押弦する左手首のクローズアップ（AI生成画像）"}],
+  key:[13]},
+ {wide:[12,13]},
+ {inserts:[{before:4,src:"cafe_rain.jpg",kind:"gen",cls:"band",alt:"雨滴の窓と二つのコーヒーカップのあるカフェのテーブル（AI生成画像）"}],
+  wide:[25]},
+ {head:{src:"dublin_street_temple_bar_night.jpg",kind:"photo",alt:"ダブリン、テンプル・バー地区の夜の街並み"},
+  key:[25], silence:28},
+ {hall:{src:"hall_interior_stratford_east.jpg",kind:"photo",panel:12,grade:"dark",alt:"古い劇場の客席と舞台、安全幕のある内装"},
+  inserts:[{before:23,src:"hall_interior_stratford_east.jpg",kind:"photo",cls:"wide",grade:"dark",pos:"50% 30%",alt:"古い劇場の舞台側の眺め"},
+            {before:42,src:"stage_wings.jpg",kind:"gen",cls:"break",alt:"舞台袖から見た舞台、スポットライトの光束（AI生成画像）"}],
+  wide:[27]},
+ {inserts:[{before:10,src:"classroom_window.jpg",kind:"gen",cls:"small left",grade:"winter",alt:"冬の夕方の光の音楽教室の窓（AI生成画像）"},
+            {before:33,src:"shannon_dusk_02.jpg",kind:"photo",cls:"wide",alt:"夜のシャノン川、対岸の灯の反射"}],
+  key:[6]}
+];
+var THUMB_ALT=["リムリック、シャノン川越しのトモンド橋とキング・ジョン城","","","夜のフェリー甲板の二人のシルエット（AI生成画像）","カムデン・ロックの運河","雨の夜の街とバス","グラフトン・ストリートの街並み","音楽教室の窓（AI生成画像）","","雨のカフェ（AI生成画像）","テンプル・バー地区の夜の街並み","古い劇場の内装","川沿いを歩く後ろ姿（AI生成画像）"];
+var THUMB=["shannon_limerick_hero.jpg",null,null,"ferry_deck.jpg","london_camden_lock_west_2006.jpg","london_bus_regent_street_night.jpg","dublin_street_grafton.jpg","classroom_window.jpg",null,"cafe_rain.jpg","dublin_street_temple_bar_night.jpg","hall_interior_stratford_east.jpg","walking_river.jpg"];
+
+/* ===== rendering ===== */
+function renderChapter(i, keepRatio){
+  cur=i; var ch=MANUSCRIPT.chapters[i]; var vis=VIS[i]||{};
+  var labelParts=ch.label.split("　");
+  $("chNum").textContent="第"+KANJI_NUM[i]+"章";
+  $("chTitle").textContent=labelParts[0];
+  var subEl=$("chSub");
+  if(labelParts.length>1){ subEl.textContent=labelParts.slice(1).join("　"); subEl.style.display=""; } else { subEl.textContent=""; subEl.style.display="none"; }
+  $("chPlace").textContent=STAGE[i].place+"　／　演出の強度： "+STAGE[i].intensity;
+  $("dockChapter").textContent="第"+KANJI_NUM[i]+"章 ／ 13章";
+  var article=$("reader");
+  var dyn=article.querySelectorAll(".dynop"); for(var d=0;d<dyn.length;d++) dyn[d].parentNode.removeChild(dyn[d]);
+  var head=article.querySelector(".chaphead");
+  head.classList.remove("doorhidden"); head.style.display="";
+  if(vis.door){
+    var door=document.createElement("div"); door.className="door dynop";
+    door.innerHTML='<img src="assets/'+vis.door.src+'" alt="'+vis.door.alt+'"><div class="doorpanel"><div class="dnum">第'+KANJI_NUM[i]+'章</div><h2>'+labelParts[0]+'</h2>'+(labelParts.length>1?'<div class="dsub">'+labelParts.slice(1).join("　")+'</div>':'')+'<div class="dplace">'+STAGE[i].place+'　／　演出の強度： '+STAGE[i].intensity+'<br>'+captionText(vis.door)+'</div></div>';
+    article.insertBefore(door, head);
+    head.style.display="none"; head.classList.add("doorhidden");
+  } else if(vis.head){
+    article.insertBefore(makeHeadband(vis.head), head);
+  }
+  var prose=$("prose"); prose.innerHTML="";
+  var beforeMap={}, afterMap={};
+  (vis.inserts||[]).forEach(function(ins){ if(typeof ins.before==="number"){ (beforeMap[ins.before]=beforeMap[ins.before]||[]).push(ins); } if(typeof ins.after==="number"){ (afterMap[ins.after]=afterMap[ins.after]||[]).push(ins); } });
+  var prevType=null, prevWasFig=false;
+  ch.paragraphs.forEach(function(t, idx){
+    if(beforeMap[idx]){ beforeMap[idx].forEach(function(ins){ prose.appendChild(makeFig(ins)); }); prevWasFig=true; }
+    if(vis.hall && idx===vis.hall.panel){ prose.appendChild(makeHallFig(vis.hall, t)); prevWasFig=true; }
+    var p=document.createElement("p"); p.textContent=t;
+    var type=(t.charAt(0)==="「")?"c":"g";
+    if(vis.key && vis.key.indexOf(idx)>=0) p.className="keyp";
+    else if(vis.wide && vis.wide.indexOf(idx)>=0) p.className="widep";
+    else if(vis.silence===idx) p.className="silencep";
+    else if(idx===0 || prevWasFig || prevType===null) p.className="m0";
+    else if(prevType==="g" && type==="g") p.className="m100";
+    else if(prevType==="g" && type==="c") p.className="m135";
+    else if(prevType==="c" && type==="c") p.className="m55";
+    else p.className="m135";
+    if(vis.hall && idx===vis.hall.panel) p.className=(p.className?p.className+" ":"")+"hallp";
+    prose.appendChild(p);
+    prevType=type; prevWasFig=false;
+    if(afterMap[idx]){ afterMap[idx].forEach(function(ins){ prose.appendChild(makeFig(ins)); }); prevWasFig=true; }
+  });
+  $("prevBtn").disabled = i===0;
+  $("nextBtn").disabled = i===MANUSCRIPT.chapters.length-1;
+  $("ending").classList.toggle("on", i===MANUSCRIPT.chapters.length-1);
+  readSet[i]=true; pos.ch=i; if(!keepRatio) pos.ratio=0; savePos();
+  applyStage(i);
+  buildChList();
+  if(!keepRatio) window.scrollTo(0,0);
+}
+function buildChList(){
+  var wrap=$("chList"); wrap.innerHTML="";
+  MANUSCRIPT.chapters.forEach(function(ch,i){
+    var b=document.createElement("button"); b.className="chcard"+(readSet[i]?" read":"");
+    b.innerHTML=(THUMB[i]?'<img class="thumb" src="assets/'+THUMB[i]+'" alt="'+THUMB_ALT[i]+'" loading="lazy">':'')+'<div class="num">第'+KANJI_NUM[i]+'章</div><div class="place">'+STAGE[i].place+'</div>'+(readSet[i]?'<div class="st">● 読書中／既読</div>':'<div class="st">全'+ch.paragraphs.length+'段落</div>');
+    b.addEventListener("click",function(){ showView("reader"); renderChapter(i); });
+    wrap.appendChild(b);
+  });
+}
+
+/* ===== views ===== */
+function showView(name){
+  currentView=name;
+  document.body.setAttribute("data-view", name);
+  var nv=$("mainNav"); if(nv) nv.classList.remove("open");
+  ["home","reader","chapters","people","places","design","notes"].forEach(function(v){ $("view-"+v).classList.toggle("on", v===name); });
+  document.querySelectorAll(".navbtn[data-go]").forEach(function(b){ b.setAttribute("aria-current", b.getAttribute("data-go")===name ? "true":"false"); });
+  $("siteFooter").style.display = name==="reader" ? "none":"block";
+  if(name!=="reader"){ applyHomeStage(); }
+  window.scrollTo(0,0);
+  updateProgress();
+}
+function applyHomeStage(){ var st=STAGE[0]; var r=document.documentElement.style; r.setProperty("--bg1",st.bg1); r.setProperty("--bg2",st.bg2); r.setProperty("--glow",st.glow); r.setProperty("--river1",st.river1); r.setProperty("--river2",st.river2); $("river").classList.toggle("on", settings.mode!=="text"); $("beam").classList.remove("on"); $("slight").classList.remove("on"); if(audio.on) audio.setAmbience("river"); }
+document.querySelectorAll("[data-go]").forEach(function(b){ b.addEventListener("click",function(){ showView(b.getAttribute("data-go")); }); });
+$("startBtn").addEventListener("click",function(){ showView("reader"); renderChapter(0); });
+$("resumeBtn").addEventListener("click",function(){ showView("reader"); renderChapter(pos.ch||0, true); restoreScroll(); });
+$("tocBtn").addEventListener("click",function(){ showView("chapters"); });
+$("prevBtn").addEventListener("click",function(){ if(cur>0) renderChapter(cur-1); });
+$("nextBtn").addEventListener("click",function(){ if(cur<MANUSCRIPT.chapters.length-1) renderChapter(cur+1); });
+$("dockTop").addEventListener("click",function(){ window.scrollTo({top:0,behavior:reduced?"auto":"smooth"}); });
+
+/* ===== progress + position ===== */
+function docProgress(){
+  var h=document.documentElement; var max=h.scrollHeight-h.clientHeight;
+  var within = max>0 ? Math.min(1, Math.max(0, window.scrollY/max)) : 0;
+  if(currentView==="reader"){ return (cur + within) / MANUSCRIPT.chapters.length; }
+  return within;
+}
+var ticking=false;
+window.addEventListener("scroll",function(){
+  if(ticking) return; ticking=true;
+  requestAnimationFrame(function(){
+    ticking=false; updateProgress();
+    if(currentView==="reader"){ var h=document.documentElement; var max=h.scrollHeight-h.clientHeight; pos.ratio = max>0 ? window.scrollY/max : 0; pos.ch=cur; savePos(); }
+  });
+},{passive:true});
+function updateProgress(){ $("progress").style.width=(docProgress()*100).toFixed(2)+"%"; }
+function restoreScroll(){ setTimeout(function(){ var h=document.documentElement; var max=h.scrollHeight-h.clientHeight; window.scrollTo(0, max*(pos.ratio||0)); },60); }
+
+/* ===== settings ===== */
+var volEl=null, sndToggleEl=null, drawerEl=null, drawerHome=null;
+function applySettings(){
+  document.documentElement.style.setProperty("--fs", settings.fs+"px");
+  document.body.setAttribute("data-mode", settings.mode);
+  document.querySelectorAll("#fsSeg button").forEach(function(b){ b.classList.toggle("on", parseFloat(b.getAttribute("data-fs"))===settings.fs); });
+  document.querySelectorAll("#modeSeg button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-mode")===settings.mode); });
+  if(volEl) volEl.value=settings.vol;
+  if(settings.mode==="text" && audio.on){ audio.stop(); settings.sound=false; syncSoundUI(); }
+  if(currentView==="reader") applyStage(cur); else applyHomeStage();
+  saveSettings();
+}
+document.querySelectorAll("#fsSeg button").forEach(function(b){ b.addEventListener("click",function(){ settings.fs=parseFloat(b.getAttribute("data-fs")); applySettings(); }); });
+document.querySelectorAll("#modeSeg button").forEach(function(b){ b.addEventListener("click",function(){ settings.mode=b.getAttribute("data-mode"); applySettings(); toast("演出モード： "+b.textContent); }); });
+$("vol").addEventListener("input",function(){ settings.vol=parseInt(this.value,10); if(audio.ctx) audio.setVolume(settings.vol/100); saveSettings(); });
+$("resetPos").addEventListener("click",function(){ pos={ch:0,ratio:0}; readSet={}; savePos(); buildChList(); syncResume(); toast("読書位置を消去しました"); });
+function syncResume(){ $("resumeBtn").style.display = (readSet && Object.keys(readSet).length) ? "" : "none"; if(Object.keys(readSet).length) $("resumeBtn").textContent="続きから読む（第"+KANJI_NUM[pos.ch||0]+"章）"; }
+
+/* drawer (kept out of the DOM while closed; attached on first open) */
+drawerEl=$("drawer"); volEl=$("vol"); sndToggleEl=$("sndToggle");
+function openDrawer(o){
+  if(o && drawerEl && !drawerEl.isConnected && drawerHome && drawerHome.parentNode){ drawerHome.parentNode.replaceChild(drawerEl, drawerHome); void drawerEl.offsetWidth; }
+  if(drawerEl) drawerEl.classList.toggle("on",o);
+  $("scrim").classList.toggle("on",o);
+}
+$("menuBtn").addEventListener("click",function(){ $("mainNav").classList.toggle("open"); });
+$("setBtn").addEventListener("click",function(){ openDrawer(true); });
+$("drawerClose").addEventListener("click",function(){ openDrawer(false); });
+$("scrim").addEventListener("click",function(){ openDrawer(false); });
+$("uiBtn").addEventListener("click",function(){ document.body.classList.toggle("ui-hidden"); });
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape") openDrawer(false);
+  if(currentView==="reader" && !(drawerEl && drawerEl.classList.contains("on"))){
+    if(e.key==="ArrowRight" && cur<MANUSCRIPT.chapters.length-1) renderChapter(cur+1);
+    if(e.key==="ArrowLeft" && cur>0) renderChapter(cur-1);
+  }
+});
+
+/* ===== Web Audio: generated ambience + motif (no audio files) ===== */
+var audio={ ctx:null, master:null, on:false, noise:null, noiseGain:null, noiseFilter:null, curAmb:null,
+  ensure:function(){ if(this.ctx) return true; try{ var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return false; this.ctx=new AC(); this.master=this.ctx.createGain(); this.master.gain.value=(settings.vol/100)*0.9; this.master.connect(this.ctx.destination); return true; }catch(e){ return false; } },
+  setVolume:function(v){ if(this.master) this.master.gain.setTargetAtTime(v*0.9, this.ctx.currentTime, .1); },
+  noiseBuffer:function(){ var len=this.ctx.sampleRate*2; var buf=this.ctx.createBuffer(1,len,this.ctx.sampleRate); var d=buf.getChannelData(0); var last=0; for(var i=0;i<len;i++){ var w=Math.random()*2-1; last=(last+0.02*w)/1.02; d[i]=(last*3.2 + w*0.12); } return buf; },
+  setAmbience:function(kind){
+    if(!this.on || !this.ctx) return;
+    if(kind===this.curAmb && this.noise) return;
+    this.curAmb=kind; var t=this.ctx.currentTime;
+    if(this.noiseGain){ this.noiseGain.gain.setTargetAtTime(0.0001,t,.6); var old=this.noise; setTimeout(function(){ try{old.stop();}catch(e){} },1800); this.noise=null; }
+    if(!kind) return;
+    var src=this.ctx.createBufferSource(); src.buffer=this.noiseBuffer(); src.loop=true;
+    var f=this.ctx.createBiquadFilter(); var g=this.ctx.createGain(); g.gain.value=0.0001;
+    var conf={ river:{type:"lowpass",freq:420,q:.6,gain:.20,lfo:.07}, rain:{type:"bandpass",freq:1600,q:.35,gain:.13,lfo:0}, sea:{type:"lowpass",freq:300,q:.8,gain:.24,lfo:.05}, city:{type:"lowpass",freq:700,q:.4,gain:.07,lfo:0}, cafe:{type:"bandpass",freq:900,q:.5,gain:.045,lfo:0} }[kind]||{type:"lowpass",freq:500,q:.5,gain:.1,lfo:0};
+    f.type=conf.type; f.frequency.value=conf.freq; f.Q.value=conf.q;
+    src.connect(f); f.connect(g); g.connect(this.master); src.start();
+    g.gain.setTargetAtTime(conf.gain, t, 1.4);
+    if(conf.lfo){ var lfo=this.ctx.createOscillator(); var lg=this.ctx.createGain(); lfo.frequency.value=conf.lfo; lg.gain.value=conf.gain*0.45; lfo.connect(lg); lg.connect(g.gain); lfo.start(); src._lfo=lfo; }
+    this.noise=src; this.noiseGain=g; this.noiseFilter=f;
+  },
+  start:function(){ if(!this.ensure()){ toast("このブラウザでは音響を利用できません。本文はそのまま読めます"); return false; } if(this.ctx.state==="suspended") this.ctx.resume(); this.on=true; this.curAmb=null; this.setAmbience(currentView==="reader" ? STAGE[cur].amb : "river"); return true; },
+  stop:function(){ this.on=false; this.curAmb=null; if(this.noiseGain && this.ctx){ this.noiseGain.gain.setTargetAtTime(0.0001,this.ctx.currentTime,.3); var n=this.noise; setTimeout(function(){ try{n&&n.stop();}catch(e){} },900); this.noise=null; } },
+  note:function(freq,when,dur,type,peak){ var o=this.ctx.createOscillator(); var g=this.ctx.createGain(); o.type=type||"sine"; o.frequency.value=freq; g.gain.setValueAtTime(0.0001,when); g.gain.exponentialRampToValueAtTime(peak||0.16, when+0.04); g.gain.exponentialRampToValueAtTime(0.0001, when+dur); o.connect(g); g.connect(this.master); o.start(when); o.stop(when+dur+0.1);
+    if((type||"sine")==="sine"){ var o2=this.ctx.createOscillator(); var g2=this.ctx.createGain(); o2.type="sine"; o2.frequency.value=freq*2; g2.gain.setValueAtTime(0.0001,when); g2.gain.exponentialRampToValueAtTime(0.035,when+0.03); g2.gain.exponentialRampToValueAtTime(0.0001,when+dur*0.7); o2.connect(g2); g2.connect(this.master); o2.start(when); o2.stop(when+dur); } },
+  playMotif:function(kind){
+    if(!this.on){ toast("まず右上の ♪ で音響をオンにしてください"); return; }
+    if(!this.ensure()) return;
+    var t=this.ctx.currentTime+0.08;
+    var seqs={
+      origin:{notes:[329.63,392.00,440.00,493.88,440.00,392.00], step:0.62, dur:1.5, type:"sine"},
+      "return":{notes:[293.66,349.23,392.00,440.00,392.00,349.23], step:0.5, dur:1.3, type:"sine"},
+      duo:{notes:[329.63,392.00,440.00,493.88], step:0.7, dur:1.7, type:"triangle"},
+      coda:{notes:[329.63,392.00,440.00], step:0.66, dur:1.8, type:"sine"}
+    };
+    var s=seqs[kind]||seqs.origin; var self=this;
+    s.notes.forEach(function(f,i){ self.note(f, t+i*s.step, s.dur, s.type, 0.15); if(kind==="duo"){ self.note(f*0.5, t+i*s.step+0.18, s.dur, "sine", 0.07); } });
+    toast("旋律モチーフを再生しています（生成音）");
+  }
+};
+function syncSoundUI(){
+  $("soundBtn").classList.toggle("on", audio.on);
+  $("soundBtn").textContent = audio.on ? "♫" : "♪";
+  $("dockSound").textContent = audio.on ? "音響 ON" : "音響 OFF";
+  if(sndToggleEl) sndToggleEl.textContent = audio.on ? "音響をオフにする" : "音響をオンにする";
+}
+function toggleSound(){
+  if(settings.mode==="text"){ toast("テキストモードでは音響は使えません"); return; }
+  if(audio.on){ audio.stop(); settings.sound=false; }
+  else { if(audio.start()){ settings.sound=true; toast("音響をオンにしました（生成音）"); } }
+  saveSettings(); syncSoundUI();
+}
+$("soundBtn").addEventListener("click", toggleSound);
+$("sndToggle").addEventListener("click", toggleSound);
+$("sndMute").addEventListener("click", function(){ if(audio.on) toggleSound(); });
+$("motifBtn").addEventListener("click", function(){ audio.playMotif(STAGE[cur].motif||"origin"); });
+
+/* ===== init ===== */
+applySettings();
+buildChList();
+renderChapter(cur, true);
+if(!hadSave){ delete readSet[cur]; savePos(); buildChList(); }
+showView("home");
+syncResume(); syncSoundUI(); updatePosInfo(); updateProgress();
+var ld=$("loading"); if(ld) ld.style.display="none";
+if(drawerEl && drawerEl.isConnected){ drawerHome=document.createComment("settings-drawer"); drawerEl.parentNode.replaceChild(drawerHome, drawerEl); }
+</script>
+</body>
+</html>
